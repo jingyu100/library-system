@@ -5,7 +5,7 @@ import com.example.librarysystem.domain.RefreshToken;
 import com.example.librarysystem.domain.Member;
 import com.example.librarysystem.dto.ResponseAccessToken;
 import com.example.librarysystem.repository.RefreshTokenRepository;
-import com.example.librarysystem.repository.UserRepository;
+import com.example.librarysystem.repository.MemberRepository;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -30,7 +30,7 @@ public class JwtService {
     private final JwtProperties jwtProperties;
     private final UserDetailsService userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     public static final String ACCESS_TOKEN = "access_token";
     public static final String REFRESH_TOKEN = "refresh_token";
@@ -99,7 +99,7 @@ public class JwtService {
     @Transactional
     public ResponseAccessToken getAccessTokenByRefreshToken(String token) throws JwtException, UsernameNotFoundException {
         String username = getRefreshJwtParser().parseSignedClaims(token).getPayload().getSubject();
-        Member member = userRepository.findByUsername(username).orElse(null);
+        Member member = memberRepository.findByUsername(username).orElse(null);
         RefreshToken refreshToken = refreshTokenRepository.findByUser_Username(username).orElse(null);
 
         if (member == null) {

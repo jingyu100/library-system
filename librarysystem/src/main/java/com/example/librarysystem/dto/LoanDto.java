@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class LoanDto {
     private Long id;
-    private UserDto user;
+    private MemberDto user;
     private BookDto book;
     private LocalDateTime loanDate;
     private LocalDateTime dueDate;
