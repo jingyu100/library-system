@@ -11,7 +11,7 @@ public class BookDto {
     private String title;
     private String author;
     private String publisher;
-    private Integer publishedYear;
+    private Integer publishedAt;
     private Integer price;
     private BookStatus status;
     private boolean available;
