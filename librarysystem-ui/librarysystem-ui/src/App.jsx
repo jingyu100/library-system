@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import LibraryApp from './components/LibraryApp';
+import LibraryApp from './components/LibraryApp.jsx';
 
 function App() {
     return (
