@@ -40,4 +40,19 @@ public class Book {
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<Loan> loans = new ArrayList<>();
+
+    // 현재 대출 여부 확인
+    public boolean isAvailable() {
+        return status == BookStatus.AVAILABLE;
+    }
+
+    // 대출 처리
+    public void loanOut() {
+        this.status = BookStatus.LOANED;
+    }
+
+    // 반납 처리
+    public void returnBook() {
+        this.status = BookStatus.AVAILABLE;
+    }
 }

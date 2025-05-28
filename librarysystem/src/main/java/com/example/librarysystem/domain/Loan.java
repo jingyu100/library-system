@@ -38,4 +38,19 @@ public class Loan {
 
     @Enumerated(EnumType.STRING)
     private LoanStatus status;
+
+    // 연체 여부 확인
+    public boolean isOverdue() {
+        if (status == LoanStatus.RETURNED) {
+            return false;
+        }
+        return LocalDateTime.now().isAfter(dueDate);
+    }
+
+    // 반납 처리
+    public void returnBook() {
+        this.returnDate = LocalDateTime.now();
+        this.status = LoanStatus.RETURNED;
+        this.book.returnBook();
+    }
 }
