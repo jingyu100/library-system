@@ -1,5 +1,6 @@
 package com.example.librarysystem.domain;
 
+import com.example.librarysystem.domain.enums.LoanStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
