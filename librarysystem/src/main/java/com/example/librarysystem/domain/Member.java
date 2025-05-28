@@ -1,6 +1,5 @@
 package com.example.librarysystem.domain;
 
-import com.example.librarysystem.domain.enums.BookStatus;
 import com.example.librarysystem.domain.enums.UserType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -17,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

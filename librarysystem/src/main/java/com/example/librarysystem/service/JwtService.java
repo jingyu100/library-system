@@ -2,7 +2,7 @@ package com.example.librarysystem.service;
 
 import com.example.librarysystem.config.JwtProperties;
 import com.example.librarysystem.domain.RefreshToken;
-import com.example.librarysystem.domain.User;
+import com.example.librarysystem.domain.Member;
 import com.example.librarysystem.dto.ResponseAccessToken;
 import com.example.librarysystem.repository.RefreshTokenRepository;
 import com.example.librarysystem.repository.UserRepository;
@@ -75,14 +75,14 @@ public class JwtService {
     }
 
     @Transactional
-    public ResponseAccessToken getAccessTokenByUsername(User user) {
-        String accessToken = generateToken(user.getUsername(), ACCESS_TOKEN);
-        String refreshToken = generateToken(user.getUsername(), REFRESH_TOKEN);
+    public ResponseAccessToken getAccessTokenByUsername(Member member) {
+        String accessToken = generateToken(member.getUsername(), ACCESS_TOKEN);
+        String refreshToken = generateToken(member.getUsername(), REFRESH_TOKEN);
 
-        RefreshToken rtEntity = refreshTokenRepository.findByUser_Username(user.getUsername()).orElse(null);
+        RefreshToken rtEntity = refreshTokenRepository.findByUser_Username(member.getUsername()).orElse(null);
         if (rtEntity == null) {
             rtEntity = RefreshToken.builder()
-                    .user(user)
+                    .member(member)
                     .refreshToken(refreshToken)
                     .build();
         } else {
@@ -99,10 +99,10 @@ public class JwtService {
     @Transactional
     public ResponseAccessToken getAccessTokenByRefreshToken(String token) throws JwtException, UsernameNotFoundException {
         String username = getRefreshJwtParser().parseSignedClaims(token).getPayload().getSubject();
-        User user = userRepository.findByUsername(username).orElse(null);
+        Member member = userRepository.findByUsername(username).orElse(null);
         RefreshToken refreshToken = refreshTokenRepository.findByUser_Username(username).orElse(null);
 
-        if (user == null) {
+        if (member == null) {
             return ResponseAccessToken.builder().error("Unknown user.").build();
         }
 
@@ -111,6 +111,6 @@ public class JwtService {
             return ResponseAccessToken.builder().error("Refresh Failed").build();
         }
 
-        return getAccessTokenByUsername(user);
+        return getAccessTokenByUsername(member);
     }
 }
