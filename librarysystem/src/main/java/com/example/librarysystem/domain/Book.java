@@ -4,12 +4,14 @@ import com.example.librarysystem.domain.enums.BookStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Data
 @Table(name = "books")
 @AllArgsConstructor
 @NoArgsConstructor
