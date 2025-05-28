@@ -6,7 +6,6 @@ import lombok.Data;
 public class MemberCreateRequest {
     private String username;
     private String password;
-    private String name;
     private String contact;
     private String memo;
 }
