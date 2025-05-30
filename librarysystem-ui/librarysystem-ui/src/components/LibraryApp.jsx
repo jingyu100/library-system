@@ -204,6 +204,21 @@ const UserManagement = () => {
         memo: ''
     });
 
+    const loadUsers = async (page = 0) => {
+        try {
+            setLoading(true);
+            const response = await apiCall(`/api/admin/users?page=${page}&size=10`);
+            setUsers(response.content || []);
+            setCurrentPage(response.number || 0);
+            setTotalPages(response.totalPages || 0);
+        } catch (error) {
+            console.error('Failed to load users:', error);
+            alert('사용자 목록을 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     React.useEffect(() => {
         loadUsers();
     }, []);
@@ -244,7 +259,7 @@ const UserManagement = () => {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (!confirm('정말로 이 사용자를 삭제하시겠습니까?')) return;
+        if (!window.confirm('정말로 이 사용자를 삭제하시겠습니까?')) return;
 
         try {
             await apiCall(`/api/admin/users/${userId}`, { method: 'DELETE' });
@@ -481,9 +496,6 @@ const AdminApp = ({ onLogout }) => {
         </div>
     );
 };
-
-// 메인 홈 페이지 컴포넌트import React, { useState } from 'react';
-import { Search, BookOpen, Users, FileText, Settings, Home, LogOut } from 'lucide-react';
 
 // 메인 홈 페이지 컴포넌트
 const HomePage = ({ onNavigate }) => {
