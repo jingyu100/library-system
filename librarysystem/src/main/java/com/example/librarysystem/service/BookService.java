@@ -28,7 +28,7 @@ public class BookService {
         Sort sort = Sort.by(
                 "desc".equalsIgnoreCase(request.getSortDirection()) ?
                         Sort.Direction.DESC : Sort.Direction.ASC,
-                getSortField(request.getSortBy())
+                request.getSortBy()
         );
 
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
@@ -92,14 +92,14 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
-    private String getSortField(String sortBy) {
-        return switch (sortBy) {
-            case "author" -> "author";
-            case "publishedAt" -> "publishedAt";
-            case "publisher" -> "publisher";
-            default -> "title";
-        };
-    }
+//    private String getSortField(String sortBy) {
+//        return switch (sortBy) {
+//            case "author" -> "author";
+//            case "publishedAt", "publishedYear" -> "publishedAt";
+//            case "publisher" -> "publisher";
+//            default -> "title";
+//        };
+//    }
 
     private BookDto convertToDto(Book book) {
         return BookDto.builder()

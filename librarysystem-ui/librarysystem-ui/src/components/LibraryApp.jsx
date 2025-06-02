@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Search, BookOpen, Users, FileText, Settings, Home, LogOut, Plus, Edit, Trash2, Eye, Calendar, AlertTriangle, BarChart3 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, BookOpen, Users, FileText, Settings, LogOut, Plus, Edit, Trash2, BarChart3, AlertTriangle } from 'lucide-react';
 
-// API 헬퍼 함수
+// API 기본 URL 설정
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+// 일반 API 헬퍼 함수 (JWT 토큰 필요)
 const apiCall = async (url, options = {}) => {
     const token = localStorage.getItem('accessToken');
 
@@ -10,19 +13,82 @@ const apiCall = async (url, options = {}) => {
         ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            ...defaultHeaders,
-            ...options.headers
+    try {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                // 토큰 만료 시 로그아웃 처리
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+    } catch (error) {
+        console.error('API Call Error:', error);
+        throw error;
     }
+};
 
-    return response.json();
+// 로그인 전용 API 함수 (JWT 토큰 불필요)
+const loginApiCall = async (url, options = {}) => {
+    const defaultHeaders = {
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Login API Call Error:', error);
+        throw error;
+    }
+};
+
+// 공개 API 함수 (JWT 토큰 불필요)
+const publicApiCall = async (url, options = {}) => {
+    const defaultHeaders = {
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${url}`, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        console.error('Public API Call Error:', error);
+        throw error;
+    }
 };
 
 // 네비게이션 컴포넌트
@@ -80,23 +146,28 @@ const AdminDashboard = () => {
         totalBooks: 0
     });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
-    React.useEffect(() => {
+    useEffect(() => {
         const loadStats = async () => {
             try {
+                setLoading(true);
+                setError('');
+
                 const [activeLoans, overdueLoans] = await Promise.all([
                     apiCall('/api/admin/loans'),
                     apiCall('/api/admin/loans/overdue')
                 ]);
 
                 setStats({
-                    activeLoans: activeLoans.length,
-                    overdueLoans: overdueLoans.length,
-                    totalUsers: 0,
-                    totalBooks: 0
+                    activeLoans: activeLoans.length || 0,
+                    overdueLoans: overdueLoans.length || 0,
+                    totalUsers: 0, // 임시값
+                    totalBooks: 0  // 임시값
                 });
             } catch (error) {
                 console.error('Failed to load stats:', error);
+                setError('통계 데이터를 불러오는데 실패했습니다.');
             } finally {
                 setLoading(false);
             }
@@ -106,7 +177,19 @@ const AdminDashboard = () => {
     }, []);
 
     if (loading) {
-        return <div className="p-8 text-center">로딩 중...</div>;
+        return (
+            <div className="p-8 text-center">
+                <div className="text-lg">로딩 중...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-8 text-center">
+                <div className="text-red-600">{error}</div>
+            </div>
+        );
     }
 
     return (
@@ -158,32 +241,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold mb-4">사용자 관리</h3>
-                    <p className="text-gray-600 mb-4">사용자 등록, 수정, 대출 현황 조회</p>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                        관리하기
-                    </button>
-                </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold mb-4">도서 관리</h3>
-                    <p className="text-gray-600 mb-4">도서 등록, 수정, 대출 현황 및 이력</p>
-                    <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-                        관리하기
-                    </button>
-                </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-semibold mb-4">대출 관리</h3>
-                    <p className="text-gray-600 mb-4">대출/반납 처리, 연체 관리</p>
-                    <button className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 transition-colors">
-                        관리하기
-                    </button>
-                </div>
-            </div>
         </div>
     );
 };
@@ -192,6 +249,7 @@ const AdminDashboard = () => {
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [showModal, setShowModal] = useState(false);
@@ -199,7 +257,6 @@ const UserManagement = () => {
     const [userForm, setUserForm] = useState({
         username: '',
         password: '',
-        name: '',
         contact: '',
         memo: ''
     });
@@ -207,19 +264,20 @@ const UserManagement = () => {
     const loadUsers = async (page = 0) => {
         try {
             setLoading(true);
+            setError('');
             const response = await apiCall(`/api/admin/users?page=${page}&size=10`);
             setUsers(response.content || []);
             setCurrentPage(response.number || 0);
             setTotalPages(response.totalPages || 0);
         } catch (error) {
             console.error('Failed to load users:', error);
-            alert('사용자 목록을 불러오는데 실패했습니다.');
+            setError('사용자 목록을 불러오는데 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         loadUsers();
     }, []);
 
@@ -237,7 +295,7 @@ const UserManagement = () => {
 
             setShowModal(false);
             setEditingUser(null);
-            setUserForm({ username: '', password: '', name: '', contact: '', memo: '' });
+            setUserForm({ username: '', password: '', contact: '', memo: '' });
             loadUsers(currentPage);
             alert('사용자가 저장되었습니다.');
         } catch (error) {
@@ -251,7 +309,6 @@ const UserManagement = () => {
         setUserForm({
             username: user.username,
             password: '',
-            name: user.name,
             contact: user.contact,
             memo: user.memo || ''
         });
@@ -273,9 +330,17 @@ const UserManagement = () => {
 
     const openAddModal = () => {
         setEditingUser(null);
-        setUserForm({ username: '', password: '', name: '', contact: '', memo: '' });
+        setUserForm({ username: '', password: '', contact: '', memo: '' });
         setShowModal(true);
     };
+
+    if (loading) {
+        return <div className="p-8 text-center">로딩 중...</div>;
+    }
+
+    if (error) {
+        return <div className="p-8 text-center text-red-600">{error}</div>;
+    }
 
     return (
         <div className="p-6">
@@ -290,93 +355,87 @@ const UserManagement = () => {
                 </button>
             </div>
 
-            {loading ? (
-                <div className="text-center py-8">로딩 중...</div>
-            ) : (
-                <div className="bg-white rounded-lg shadow">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">번호</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">아이디</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">연락처</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">메모</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
+            <div className="bg-white rounded-lg shadow">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">번호</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">아이디</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">연락처</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">메모</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                        {users.map((user) => (
+                            <tr key={user.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.username}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.contact}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.memo || '-'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEditUser(user)}
+                                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                                        >
+                                            <Edit size={14} />
+                                            수정
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteUser(user.id)}
+                                            className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                                        >
+                                            <Trash2 size={14} />
+                                            삭제
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                            {users.map((user) => (
-                                <tr key={user.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.username}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.contact}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.memo || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleEditUser(user)}
-                                                className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                                            >
-                                                <Edit size={14} />
-                                                수정
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteUser(user.id)}
-                                                className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                                            >
-                                                <Trash2 size={14} />
-                                                삭제
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* 페이지네이션 */}
-                    {totalPages > 1 && (
-                        <div className="flex justify-center gap-2 p-4">
-                            <button
-                                onClick={() => loadUsers(currentPage - 1)}
-                                disabled={currentPage === 0}
-                                className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                            >
-                                이전
-                            </button>
-
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
-                                return (
-                                    <button
-                                        key={page}
-                                        onClick={() => loadUsers(page)}
-                                        className={`px-3 py-2 border border-gray-300 rounded-lg ${
-                                            page === currentPage
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-white hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        {page + 1}
-                                    </button>
-                                );
-                            })}
-
-                            <button
-                                onClick={() => loadUsers(currentPage + 1)}
-                                disabled={currentPage >= totalPages - 1}
-                                className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                            >
-                                다음
-                            </button>
-                        </div>
-                    )}
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+
+                {/* 페이지네이션 */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center gap-2 p-4">
+                        <button
+                            onClick={() => loadUsers(currentPage - 1)}
+                            disabled={currentPage === 0}
+                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                        >
+                            이전
+                        </button>
+
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                            const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
+                            return (
+                                <button
+                                    key={page}
+                                    onClick={() => loadUsers(page)}
+                                    className={`px-3 py-2 border border-gray-300 rounded-lg ${
+                                        page === currentPage
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {page + 1}
+                                </button>
+                            );
+                        })}
+
+                        <button
+                            onClick={() => loadUsers(currentPage + 1)}
+                            disabled={currentPage >= totalPages - 1}
+                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {/* 사용자 추가/수정 모달 */}
             {showModal && (
@@ -408,16 +467,6 @@ const UserManagement = () => {
                                 {editingUser && (
                                     <p className="text-sm text-gray-500 mt-1">비워두면 비밀번호가 변경되지 않습니다.</p>
                                 )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">이름</label>
-                                <input
-                                    type="text"
-                                    value={userForm.name}
-                                    onChange={(e) => setUserForm({...userForm, name: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
                             </div>
 
                             <div>
@@ -558,12 +607,14 @@ const UserSearchPage = ({ onNavigate }) => {
     });
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const pageSize = 10;
 
     const searchBooks = async (page = 0) => {
         setLoading(true);
+        setError('');
         try {
             const params = new URLSearchParams({
                 ...searchForm,
@@ -573,20 +624,20 @@ const UserSearchPage = ({ onNavigate }) => {
 
             // 빈 값들은 제거
             Object.keys(searchForm).forEach(key => {
-                if (!searchForm[key]) {
-                    params.delete(key);
+                if (!searchForm[key] || (key === 'sortBy' || key === 'sortDirection')) {
+                    if (!searchForm[key] && key !== 'sortBy' && key !== 'sortDirection') {
+                        params.delete(key);
+                    }
                 }
             });
 
-            const response = await fetch(`/api/public/books/search?${params}`);
-            const data = await response.json();
-
-            setBooks(data.content || []);
-            setCurrentPage(data.number || 0);
-            setTotalPages(data.totalPages || 0);
+            const response = await publicApiCall(`/api/public/books/search?${params}`);
+            setBooks(response.content || []);
+            setCurrentPage(response.number || 0);
+            setTotalPages(response.totalPages || 0);
         } catch (error) {
             console.error('Search error:', error);
-            alert('검색 중 오류가 발생했습니다.');
+            setError('검색 중 오류가 발생했습니다.');
         } finally {
             setLoading(false);
         }
@@ -603,7 +654,7 @@ const UserSearchPage = ({ onNavigate }) => {
         searchBooks(page);
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         searchBooks();
     }, []);
 
@@ -626,7 +677,7 @@ const UserSearchPage = ({ onNavigate }) => {
 
                 {/* 검색 폼 */}
                 <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <div onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit}>
                         <div className="grid md:grid-cols-4 gap-4 mb-4">
                             <input
                                 type="text"
@@ -650,7 +701,7 @@ const UserSearchPage = ({ onNavigate }) => {
                                 className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button
-                                onClick={handleSubmit}
+                                type="submit"
                                 disabled={loading}
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
@@ -665,7 +716,7 @@ const UserSearchPage = ({ onNavigate }) => {
                             >
                                 <option value="title">제목순</option>
                                 <option value="author">저자순</option>
-                                <option value="publishedYear">출간년순</option>
+                                <option value="publishedAt">출간년순</option>
                             </select>
                             <select
                                 value={searchForm.sortDirection}
@@ -676,8 +727,15 @@ const UserSearchPage = ({ onNavigate }) => {
                                 <option value="desc">내림차순</option>
                             </select>
                         </div>
-                    </div>
+                    </form>
                 </div>
+
+                {/* 오류 메시지 */}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                        {error}
+                    </div>
+                )}
 
                 {/* 검색 결과 */}
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -692,7 +750,7 @@ const UserSearchPage = ({ onNavigate }) => {
                                 <div className="text-gray-600 space-y-1 mb-3">
                                     <p><span className="font-medium">저자:</span> {book.author}</p>
                                     <p><span className="font-medium">출판사:</span> {book.publisher}</p>
-                                    <p><span className="font-medium">출간년:</span> {book.publishedYear || 'N/A'}</p>
+                                    <p><span className="font-medium">출간년:</span> {book.publishedAt || 'N/A'}</p>
                                     <p><span className="font-medium">가격:</span> {book.price ? `${book.price.toLocaleString()}원` : 'N/A'}</p>
                                 </div>
                                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
@@ -700,8 +758,8 @@ const UserSearchPage = ({ onNavigate }) => {
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-red-100 text-red-800'
                                 }`}>
-                  {book.available ? '대출 가능' : '대출 불가'}
-                </span>
+                                    {book.available ? '대출 가능' : '대출 불가'}
+                                </span>
                             </div>
                         ))
                     )}
@@ -752,42 +810,65 @@ const UserSearchPage = ({ onNavigate }) => {
 // 관리자 로그인 페이지
 const AdminLoginPage = ({ onNavigate, onLogin }) => {
     const [credentials, setCredentials] = useState({
-        username: '',
-        password: ''
+        username: 'admin',
+        password: 'admin123'
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [debugInfo, setDebugInfo] = useState('');
 
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
         setLoading(true);
         setError('');
+        setDebugInfo('로그인 시도 중...');
 
         try {
-            const response = await fetch('/api/auth/login', {
+            console.log('로그인 요청:', credentials);
+
+            // 로그인 전용 API 함수 사용 (JWT 토큰 없이)
+            const response = await loginApiCall('/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(credentials)
             });
 
-            const data = await response.json();
+            console.log('로그인 응답:', response);
+            setDebugInfo('로그인 응답 받음');
 
-            if (response.ok && !data.error) {
-                // 토큰을 저장하고 관리자 페이지로 이동
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('refreshToken', data.refreshToken);
-                onLogin(data.accessToken);
+            if (response.error) {
+                setError(response.error);
+                setDebugInfo(`로그인 실패: ${response.error}`);
+            } else if (response.accessToken) {
+                // 성공
+                localStorage.setItem('accessToken', response.accessToken);
+                if (response.refreshToken) {
+                    localStorage.setItem('refreshToken', response.refreshToken);
+                }
+                setDebugInfo('로그인 성공! 대시보드로 이동...');
+                onLogin(response.accessToken);
                 onNavigate('admin-dashboard');
             } else {
-                setError(data.error || '로그인에 실패했습니다.');
+                setError('잘못된 응답 형식입니다.');
+                setDebugInfo('응답에 토큰이 없습니다.');
             }
         } catch (error) {
             console.error('Login error:', error);
-            setError('로그인 중 오류가 발생했습니다.');
+            setError(`로그인 중 오류: ${error.message}`);
+            setDebugInfo(`오류 발생: ${error.message}`);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const testConnection = async () => {
+        try {
+            setDebugInfo('연결 테스트 중...');
+            const response = await publicApiCall('/api/public/books/search?page=0&size=1');
+            setDebugInfo('백엔드 연결 성공!');
+            console.log('연결 테스트 성공:', response);
+        } catch (error) {
+            setDebugInfo(`연결 오류: ${error.message}`);
+            console.error('연결 테스트 실패:', error);
         }
     };
 
@@ -799,12 +880,30 @@ const AdminLoginPage = ({ onNavigate, onLogin }) => {
                         <h2 className="text-2xl font-bold">관리자 로그인</h2>
                     </div>
                     <div className="p-6">
+                        {/* 디버그 정보 */}
+                        {debugInfo && (
+                            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
+                                <strong>디버그:</strong> {debugInfo}
+                            </div>
+                        )}
+
+                        {/* 연결 테스트 버튼 */}
+                        <div className="mb-4">
+                            <button
+                                onClick={testConnection}
+                                className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                            >
+                                백엔드 연결 테스트
+                            </button>
+                        </div>
+
                         {error && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                                 {error}
                             </div>
                         )}
-                        <div onSubmit={handleSubmit}>
+
+                        <form onSubmit={handleSubmit}>
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2">
                                     아이디
@@ -830,17 +929,17 @@ const AdminLoginPage = ({ onNavigate, onLogin }) => {
                                 />
                             </div>
                             <button
-                                onClick={handleSubmit}
+                                type="submit"
                                 disabled={loading}
                                 className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                             >
                                 {loading ? '로그인 중...' : '로그인'}
                             </button>
-                        </div>
+                        </form>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 rounded-b-lg text-center">
                         <small className="text-gray-600">
-                            기본 관리자 계정: admin / admin123
+                            테스트 계정: admin / admin123
                         </small>
                     </div>
                 </div>
@@ -863,7 +962,7 @@ const LibraryApp = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [accessToken, setAccessToken] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         // 페이지 로드 시 저장된 토큰 확인
         const token = localStorage.getItem('accessToken');
         if (token) {

@@ -23,7 +23,7 @@ public class Member {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
@@ -35,9 +35,10 @@ public class Member {
     private String memo; // 부서나 기타 정보
 
     @Enumerated(EnumType.STRING)
-    private UserType userType;
+    @Builder.Default
+    private UserType userType = UserType.USER;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Loan> loans = new ArrayList<>();
 }

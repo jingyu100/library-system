@@ -79,7 +79,7 @@ public class JwtService {
         String accessToken = generateToken(member.getUsername(), ACCESS_TOKEN);
         String refreshToken = generateToken(member.getUsername(), REFRESH_TOKEN);
 
-        RefreshToken rtEntity = refreshTokenRepository.findByUser_Username(member.getUsername()).orElse(null);
+        RefreshToken rtEntity = refreshTokenRepository.findByMember_Username(member.getUsername()).orElse(null);
         if (rtEntity == null) {
             rtEntity = RefreshToken.builder()
                     .member(member)
@@ -100,7 +100,7 @@ public class JwtService {
     public ResponseAccessToken getAccessTokenByRefreshToken(String token) throws JwtException, UsernameNotFoundException {
         String username = getRefreshJwtParser().parseSignedClaims(token).getPayload().getSubject();
         Member member = memberRepository.findByUsername(username).orElse(null);
-        RefreshToken refreshToken = refreshTokenRepository.findByUser_Username(username).orElse(null);
+        RefreshToken refreshToken = refreshTokenRepository.findByMember_Username(username).orElse(null);
 
         if (member == null) {
             return ResponseAccessToken.builder().error("Unknown user.").build();
