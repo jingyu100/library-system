@@ -38,5 +38,6 @@ public class Member {
     private UserType userType;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Loan> loans = new ArrayList<>();
 }

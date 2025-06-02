@@ -36,9 +36,11 @@ public class Book {
     private Integer price;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private BookStatus status = BookStatus.AVAILABLE;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<Loan> loans = new ArrayList<>();
 
     // 현재 대출 여부 확인
