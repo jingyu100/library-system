@@ -7,26 +7,38 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+// TokenAuthenticationService.java 수정
 @Service
 @RequiredArgsConstructor
 public class TokenAuthenticationService {
-
     private final MemberService memberService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
     public ResponseAccessToken generateToken(RequestAccessToken request) {
+        System.out.println("Login attempt for username: " + request.getUsername());
 
         Member user = memberService.findByMemberName(request.getUsername()).orElse(null);
 
-        if (user != null && passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return jwtService.getAccessTokenByUsername(user);
+        if (user == null) {
+            System.out.println("User not found: " + request.getUsername());
+            return ResponseAccessToken.builder().error("User not found").build();
         }
 
-        return ResponseAccessToken.builder().error("Invalid username or password").build();
-    }
+        System.out.println("User found: " + user.getUsername() + ", Type: " + user.getUserType());
+        System.out.println("Stored password hash: " + user.getPassword());
+        System.out.println("Input password: " + request.getPassword());
 
-    public ResponseAccessToken refreshAccessToken(String refreshToken) {
-        return jwtService.getAccessTokenByRefreshToken(refreshToken);
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        System.out.println("Password matches: " + passwordMatches);
+
+        if (passwordMatches) {
+            ResponseAccessToken token = jwtService.getAccessTokenByUsername(user);
+            System.out.println("Token generated successfully");
+            return token;
+        }
+
+        System.out.println("Invalid password for user: " + request.getUsername());
+        return ResponseAccessToken.builder().error("Invalid username or password").build();
     }
 }

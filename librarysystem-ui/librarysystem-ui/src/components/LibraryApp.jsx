@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Users, FileText, Settings, LogOut, Plus, Edit, Trash2, BarChart3, AlertTriangle } from 'lucide-react';
 
 // API 기본 URL 설정
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = 'http://localhost:8080';
 
 // 일반 API 헬퍼 함수 (JWT 토큰 필요)
 const apiCall = async (url, options = {}) => {
@@ -824,22 +824,21 @@ const AdminLoginPage = ({ onNavigate, onLogin }) => {
         setDebugInfo('로그인 시도 중...');
 
         try {
-            console.log('로그인 요청:', credentials);
+            console.log('로그인 요청 데이터:', credentials);
+            console.log('API_BASE_URL:', API_BASE_URL);
 
-            // 로그인 전용 API 함수 사용 (JWT 토큰 없이)
             const response = await loginApiCall('/api/auth/login', {
                 method: 'POST',
                 body: JSON.stringify(credentials)
             });
 
-            console.log('로그인 응답:', response);
-            setDebugInfo('로그인 응답 받음');
+            console.log('서버 응답:', response);
+            setDebugInfo(`서버 응답 받음: ${JSON.stringify(response)}`);
 
             if (response.error) {
                 setError(response.error);
                 setDebugInfo(`로그인 실패: ${response.error}`);
             } else if (response.accessToken) {
-                // 성공
                 localStorage.setItem('accessToken', response.accessToken);
                 if (response.refreshToken) {
                     localStorage.setItem('refreshToken', response.refreshToken);
@@ -849,12 +848,12 @@ const AdminLoginPage = ({ onNavigate, onLogin }) => {
                 onNavigate('admin-dashboard');
             } else {
                 setError('잘못된 응답 형식입니다.');
-                setDebugInfo('응답에 토큰이 없습니다.');
+                setDebugInfo(`응답 형식 오류: ${JSON.stringify(response)}`);
             }
         } catch (error) {
             console.error('Login error:', error);
             setError(`로그인 중 오류: ${error.message}`);
-            setDebugInfo(`오류 발생: ${error.message}`);
+            setDebugInfo(`네트워크 오류: ${error.message}`);
         } finally {
             setLoading(false);
         }

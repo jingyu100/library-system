@@ -1,6 +1,6 @@
 -- 관리자 계정 추가 (admin/admin123)
 INSERT INTO users (username, password, contact, memo, user_type) VALUES
-    ('admin', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-0000-0000', '시스템 관리자', 'ADMIN');
+    ('admin', '{bcrypt}$2a$10$PJoErFK3RJ.xfhBcrlS0DO2x9IRAZt1xP.Ba6KAFrpYLvYMvbSbNu', '010-0000-0000', '시스템 관리자', 'ADMIN');
 
 -- 샘플 사용자 데이터 (비밀번호: password123)
 INSERT INTO users (username, password, contact, memo, user_type) VALUES
