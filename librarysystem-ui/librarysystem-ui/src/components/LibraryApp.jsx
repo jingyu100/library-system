@@ -8,6 +8,9 @@ const API_BASE_URL = 'http://localhost:8080';
 const apiCall = async (url, options = {}) => {
     const token = localStorage.getItem('accessToken');
 
+    console.log('🚀 API Call:', url);
+    console.log('🔑 Token exists:', !!token);
+
     const defaultHeaders = {
         'Content-Type': 'application/json',
         ...(token && { 'Authorization': `Bearer ${token}` })
@@ -19,28 +22,40 @@ const apiCall = async (url, options = {}) => {
             headers: {
                 ...defaultHeaders,
                 ...options.headers
-            }
+            },
+            mode: 'cors',
+            credentials: 'include'
         });
+
+        console.log('📥 Response status:', response.status);
+        console.log('📥 Response headers:', response.headers);
 
         if (!response.ok) {
             if (response.status === 401) {
-                // 토큰 만료 시 로그아웃 처리
+                console.log('🔐 Unauthorized - removing tokens');
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
             }
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+            const errorText = await response.text();
+            console.log('❌ Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        return response.json();
+        const data = await response.json();
+        console.log('✅ Success response:', data);
+        return data;
     } catch (error) {
-        console.error('API Call Error:', error);
+        console.error('💥 API Call Error:', error);
         throw error;
     }
 };
 
 // 로그인 전용 API 함수 (JWT 토큰 불필요)
 const loginApiCall = async (url, options = {}) => {
+    console.log('🔐 Login API Call:', url);
+
     const defaultHeaders = {
         'Content-Type': 'application/json'
     };
@@ -51,22 +66,32 @@ const loginApiCall = async (url, options = {}) => {
             headers: {
                 ...defaultHeaders,
                 ...options.headers
-            }
+            },
+            mode: 'cors',
+            credentials: 'include'
         });
 
+        console.log('📥 Login Response status:', response.status);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.log('❌ Login Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        return response.json();
+        const data = await response.json();
+        console.log('✅ Login Success response:', data);
+        return data;
     } catch (error) {
-        console.error('Login API Call Error:', error);
+        console.error('💥 Login API Call Error:', error);
         throw error;
     }
 };
 
 // 공개 API 함수 (JWT 토큰 불필요)
 const publicApiCall = async (url, options = {}) => {
+    console.log('🌐 Public API Call:', url);
+
     const defaultHeaders = {
         'Content-Type': 'application/json'
     };
@@ -77,16 +102,23 @@ const publicApiCall = async (url, options = {}) => {
             headers: {
                 ...defaultHeaders,
                 ...options.headers
-            }
+            },
+            mode: 'cors'
         });
 
+        console.log('📥 Public Response status:', response.status);
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.log('❌ Public Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        return response.json();
+        const data = await response.json();
+        console.log('✅ Public Success response:', data);
+        return data;
     } catch (error) {
-        console.error('Public API Call Error:', error);
+        console.error('💥 Public API Call Error:', error);
         throw error;
     }
 };
