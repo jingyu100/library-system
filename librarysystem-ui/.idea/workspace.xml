@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9b34187-7208-40b6-92f5-d94f9e674149" name="변경" comment="">
-      <change beforePath="$PROJECT_DIR$/librarysystem-ui/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/librarysystem-ui/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/dto/MemberCreateRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/dto/MemberCreateRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/dto/MemberDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/dto/MemberDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/BookRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/BookRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/LoanRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/LoanRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/MemberRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/MemberRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/RefreshTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../librarysystem/src/main/java/com/example/librarysystem/repository/RefreshTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/librarysystem-ui/src/components/LibraryApp.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/LibraryApp.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +33,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/jingyu/study/library-system/librarysystem-ui&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/User/Documents/GitHub/library-system/librarysystem-ui&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -50,24 +45,11 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="librarysystem-ui" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="librarysystem-ui" />
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
-        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.25410.129" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-IU-251.25410.129" />
       </set>
     </attachedChunks>
   </component>
@@ -82,6 +64,8 @@
       <workItem from="1748437355514" duration="152000" />
       <workItem from="1748437517976" duration="1572000" />
       <workItem from="1748439684180" duration="76000" />
+      <workItem from="1748940071320" duration="348000" />
+      <workItem from="1748940544551" duration="1138000" />
     </task>
     <servers />
   </component>
