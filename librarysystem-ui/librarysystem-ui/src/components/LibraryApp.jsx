@@ -1189,6 +1189,340 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
     );
 };
 
+// 대출 관리 페이지
+const LoanManagement = () => {
+    const [loans, setLoans] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedLoan, setSelectedLoan] = useState(null);
+    const [loanForm, setLoanForm] = useState({
+        userId: '',
+        bookId: '',
+        loanDays: 14
+    });
+    const [users, setUsers] = useState([]);
+    const [books, setBooks] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // 날짜 포맷팅 함수
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('ko-KR');
+    };
+
+    // 대출 상태 배지
+    const getLoanStatusBadge = (loan) => {
+        if (loan.status === 'RETURNED') {
+            return (
+                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
+                    반납완료
+                </span>
+            );
+        } else if (loan.overdue) {
+            return (
+                <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                    연체
+                </span>
+            );
+        } else {
+            return (
+                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    대출중
+                </span>
+            );
+        }
+    };
+
+    const loadLoans = async (page = 0) => {
+        try {
+            setLoading(true);
+            setError('');
+            const url = searchTerm
+                ? `/api/admin/loans/search?query=${encodeURIComponent(searchTerm)}&page=${page}&size=10`
+                : `/api/admin/loans?page=${page}&size=10`;
+            const response = await apiCall(url);
+            setLoans(response.content || []);
+            setCurrentPage(response.number || 0);
+            setTotalPages(response.totalPages || 0);
+        } catch (error) {
+            console.error('Failed to load loans:', error);
+            setError('대출 목록을 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const loadUsersAndBooks = async () => {
+        try {
+            const [usersResponse, booksResponse] = await Promise.all([
+                apiCall('/api/admin/users?size=1000'),
+                apiCall('/api/admin/books?size=1000')
+            ]);
+            setUsers(usersResponse.content || []);
+            setBooks(booksResponse.content?.filter(book => book.status === 'AVAILABLE') || []);
+        } catch (error) {
+            console.error('Failed to load users and books:', error);
+        }
+    };
+
+    useEffect(() => {
+        loadLoans();
+        loadUsersAndBooks();
+    }, []);
+
+    const handleSearch = () => {
+        setCurrentPage(0);
+        loadLoans(0);
+    };
+
+    const handleCreateLoan = async () => {
+        try {
+            await apiCall('/api/admin/loans', {
+                method: 'POST',
+                body: JSON.stringify({
+                    userId: parseInt(loanForm.userId),
+                    bookId: parseInt(loanForm.bookId),
+                    loanDays: parseInt(loanForm.loanDays)
+                })
+            });
+
+            setShowModal(false);
+            setLoanForm({ userId: '', bookId: '', loanDays: 14 });
+            loadLoans(currentPage);
+            loadUsersAndBooks(); // 도서 목록 새로고침
+            alert('대출이 등록되었습니다.');
+        } catch (error) {
+            console.error('Failed to create loan:', error);
+            alert('대출 등록에 실패했습니다.');
+        }
+    };
+
+    const handleReturnBook = async (loanId) => {
+        if (!window.confirm('이 도서를 반납처리 하시겠습니까?')) return;
+
+        try {
+            await apiCall(`/api/admin/loans/${loanId}/return`, {
+                method: 'PUT'
+            });
+            loadLoans(currentPage);
+            loadUsersAndBooks(); // 도서 목록 새로고침
+            alert('반납처리가 완료되었습니다.');
+        } catch (error) {
+            console.error('Failed to return book:', error);
+            alert('반납처리에 실패했습니다.');
+        }
+    };
+
+    const openCreateModal = () => {
+        setLoanForm({ userId: '', bookId: '', loanDays: 14 });
+        setShowModal(true);
+    };
+
+    if (loading) {
+        return <div className="p-8 text-center">로딩 중...</div>;
+    }
+
+    if (error) {
+        return <div className="p-8 text-center text-red-600">{error}</div>;
+    }
+
+    return (
+        <div className="p-6">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">대출 관리</h2>
+                <button
+                    onClick={openCreateModal}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <Plus size={16}/>
+                    대출 등록
+                </button>
+            </div>
+
+            {/* 검색 */}
+            <div className="bg-white rounded-lg shadow p-4 mb-6">
+                <div className="flex gap-4">
+                    <input
+                        type="text"
+                        placeholder="사용자명, 도서명으로 검색..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+                    <button
+                        onClick={handleSearch}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <Search size={16}/>
+                        검색
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">대출번호</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">사용자</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">도서명</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">저자</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">대출일</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">반납예정일</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">반납일</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
+                        </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                        {loans.map((loan) => (
+                            <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{loan.id}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{loan.user.username}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{loan.book.title}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{loan.book.author}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(loan.loanDate)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(loan.dueDate)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {getLoanStatusBadge(loan)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    {loan.status !== 'RETURNED' && (
+                                        <button
+                                            onClick={() => handleReturnBook(loan.id)}
+                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                                        >
+                                            <FileText size={14}/>
+                                            반납
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* 페이지네이션 */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center gap-2 p-4">
+                        <button
+                            onClick={() => loadLoans(currentPage - 1)}
+                            disabled={currentPage === 0}
+                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                        >
+                            이전
+                        </button>
+
+                        {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                            const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
+                            return (
+                                <button
+                                    key={page}
+                                    onClick={() => loadLoans(page)}
+                                    className={`px-3 py-2 border border-gray-300 rounded-lg ${
+                                        page === currentPage
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {page + 1}
+                                </button>
+                            );
+                        })}
+
+                        <button
+                            onClick={() => loadLoans(currentPage + 1)}
+                            disabled={currentPage >= totalPages - 1}
+                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                        >
+                            다음
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* 대출 등록 모달 */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
+                        <h3 className="text-lg font-semibold mb-4">대출 등록</h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">사용자</label>
+                                <select
+                                    value={loanForm.userId}
+                                    onChange={(e) => setLoanForm({...loanForm, userId: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">사용자를 선택하세요</option>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.username} ({user.contact})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">도서</label>
+                                <select
+                                    value={loanForm.bookId}
+                                    onChange={(e) => setLoanForm({...loanForm, bookId: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">도서를 선택하세요</option>
+                                    {books.map((book) => (
+                                        <option key={book.id} value={book.id}>
+                                            {book.title} - {book.author}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">대출 기간 (일)</label>
+                                <input
+                                    type="number"
+                                    value={loanForm.loanDays}
+                                    onChange={(e) => setLoanForm({...loanForm, loanDays: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    min="1"
+                                    max="30"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-6">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleCreateLoan}
+                                disabled={!loanForm.userId || !loanForm.bookId}
+                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                등록
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // 메인 앱 컴포넌트
 const LibraryApp = () => {
     const [currentPage, setCurrentPage] = useState('home');
@@ -1253,6 +1587,10 @@ const BookManagement = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [editingBook, setEditingBook] = useState(null);
+    const [showBookLoanModal, setShowBookLoanModal] = useState(false);
+    const [selectedBookForLoans, setSelectedBookForLoans] = useState(null);
+    const [bookLoans, setBookLoans] = useState([]);
+    const [bookLoanLoading, setBookLoanLoading] = useState(false);
     const [bookForm, setBookForm] = useState({
         title: '',
         author: '',
@@ -1260,6 +1598,34 @@ const BookManagement = () => {
         publishedAt: '',
         price: ''
     });
+
+    // 날짜 포맷팅 함수
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('ko-KR');
+    };
+
+    // 대출 상태 배지
+    const getLoanStatusBadge = (loan) => {
+        if (loan.status === 'RETURNED') {
+            return (
+                <span className="inline-block px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
+                    반납완료
+                </span>
+            );
+        } else if (loan.overdue) {
+            return (
+                <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                    연체
+                </span>
+            );
+        } else {
+            return (
+                <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                    대출중
+                </span>
+            );
+        }
+    };
 
     const loadBooks = async (page = 0) => {
         try {
@@ -1275,6 +1641,27 @@ const BookManagement = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 도서 대출 이력 조회 함수
+    const loadBookLoans = async (bookId) => {
+        try {
+            setBookLoanLoading(true);
+            const response = await apiCall(`/api/admin/books/${bookId}/loans`);
+            setBookLoans(response || []);
+        } catch (error) {
+            console.error('Failed to load book loans:', error);
+            alert('도서 대출 이력을 불러오는데 실패했습니다.');
+        } finally {
+            setBookLoanLoading(false);
+        }
+    };
+
+    // 도서 대출 이력 모달 열기
+    const handleViewBookLoans = async (book) => {
+        setSelectedBookForLoans(book);
+        setShowBookLoanModal(true);
+        await loadBookLoans(book.id);
     };
 
     useEffect(() => {
@@ -1406,6 +1793,13 @@ const BookManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div className="flex gap-2">
                                         <button
+                                            onClick={() => handleViewBookLoans(book)}
+                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                                        >
+                                            <FileText size={14}/>
+                                            대출이력
+                                        </button>
+                                        <button
                                             onClick={() => handleEditBook(book)}
                                             className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                                         >
@@ -1465,6 +1859,121 @@ const BookManagement = () => {
                     </div>
                 )}
             </div>
+
+            {/* 도서 대출 이력 모달 */}
+            {showBookLoanModal && selectedBookForLoans && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">
+                                "{selectedBookForLoans.title}" 대출 이력
+                            </h3>
+                            <button
+                                onClick={() => setShowBookLoanModal(false)}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <X size={20}/>
+                            </button>
+                        </div>
+
+                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <span className="font-medium">저자:</span> {selectedBookForLoans.author}
+                                </div>
+                                <div>
+                                    <span className="font-medium">출판사:</span> {selectedBookForLoans.publisher}
+                                </div>
+                                <div>
+                                    <span className="font-medium">현재 상태:</span>
+                                    <span className={`ml-2 inline-block px-2 py-1 rounded-full text-xs ${
+                                        selectedBookForLoans.status === 'AVAILABLE'
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {selectedBookForLoans.status === 'AVAILABLE' ? '대출 가능' : '대출 중'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {bookLoanLoading ? (
+                            <div className="text-center py-8">로딩 중...</div>
+                        ) : bookLoans.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                                대출 이력이 없습니다.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full border border-gray-200">
+                                    <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출번호
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            사용자
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            연락처
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납예정일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            상태
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                    {bookLoans.map((loan) => (
+                                        <tr key={loan.id}
+                                            className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.id}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.user.username}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.user.contact}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.loanDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.dueDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {getLoanStatusBadge(loan)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={() => setShowBookLoanModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                            >
+                                닫기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 도서 추가/수정 모달 */}
             {showModal && (
@@ -1538,248 +2047,6 @@ const BookManagement = () => {
                                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
                                 저장
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// 대출 관리 페이지
-const LoanManagement = () => {
-    const [loans, setLoans] = useState([]);
-    const [overdueLoans, setOverdueLoans] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('active'); // 'active' or 'overdue'
-    const [showLoanModal, setShowLoanModal] = useState(false);
-    const [loanForm, setLoanForm] = useState({
-        userId: '',
-        bookId: ''
-    });
-
-    const loadLoans = async () => {
-        try {
-            setLoading(true);
-            setError('');
-            const [activeResponse, overdueResponse] = await Promise.all([
-                apiCall('/api/admin/loans'),
-                apiCall('/api/admin/loans/overdue')
-            ]);
-            setLoans(activeResponse || []);
-            setOverdueLoans(overdueResponse || []);
-        } catch (error) {
-            console.error('Failed to load loans:', error);
-            setError('대출 목록을 불러오는데 실패했습니다.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadLoans();
-    }, []);
-
-    const handleLoanBook = async () => {
-        try {
-            const loanData = {
-                userId: parseInt(loanForm.userId),
-                bookId: parseInt(loanForm.bookId)
-            };
-
-            await apiCall('/api/admin/loans/loan', {
-                method: 'POST',
-                body: JSON.stringify(loanData)
-            });
-
-            setShowLoanModal(false);
-            setLoanForm({userId: '', bookId: ''});
-            loadLoans();
-            alert('도서가 대출되었습니다.');
-        } catch (error) {
-            console.error('Failed to loan book:', error);
-            alert('도서 대출에 실패했습니다.');
-        }
-    };
-
-    const handleReturnBook = async (loanId) => {
-        if (!window.confirm('정말로 이 도서를 반납 처리하시겠습니까?')) return;
-
-        try {
-            await apiCall(`/api/admin/loans/return/${loanId}`, {method: 'POST'});
-            loadLoans();
-            alert('도서가 반납되었습니다.');
-        } catch (error) {
-            console.error('Failed to return book:', error);
-            alert('도서 반납에 실패했습니다.');
-        }
-    };
-
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('ko-KR');
-    };
-
-    const getStatusBadge = (loan) => {
-        if (loan.overdue) {
-            return (
-                <span className="inline-block px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                    연체
-                </span>
-            );
-        }
-        return (
-            <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                대출 중
-            </span>
-        );
-    };
-
-    if (loading) {
-        return <div className="p-8 text-center">로딩 중...</div>;
-    }
-
-    if (error) {
-        return <div className="p-8 text-center text-red-600">{error}</div>;
-    }
-
-    const currentLoans = activeTab === 'active' ? loans : overdueLoans;
-
-    return (
-        <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">대출 관리</h2>
-                <button
-                    onClick={() => setShowLoanModal(true)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <Plus size={16}/>
-                    도서 대출
-                </button>
-            </div>
-
-            {/* 탭 메뉴 */}
-            <div className="flex gap-4 mb-6">
-                <button
-                    onClick={() => setActiveTab('active')}
-                    className={`px-4 py-2 rounded-lg font-medium ${
-                        activeTab === 'active'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                >
-                    현재 대출 ({loans.length})
-                </button>
-                <button
-                    onClick={() => setActiveTab('overdue')}
-                    className={`px-4 py-2 rounded-lg font-medium ${
-                        activeTab === 'overdue'
-                            ? 'bg-red-600 text-white'
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                >
-                    연체 도서 ({overdueLoans.length})
-                </button>
-            </div>
-
-            <div className="bg-white rounded-lg shadow">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">대출번호</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">사용자</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">도서</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">대출일</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">반납예정일</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">작업</th>
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                        {currentLoans.length === 0 ? (
-                            <tr>
-                                <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
-                                    {activeTab === 'active' ? '현재 대출 중인 도서가 없습니다.' : '연체된 도서가 없습니다.'}
-                                </td>
-                            </tr>
-                        ) : (
-                            currentLoans.map((loan) => (
-                                <tr key={loan.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{loan.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {loan.user.username} ({loan.user.contact})
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {loan.book.title} - {loan.book.author}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {formatDate(loan.loanDate)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {formatDate(loan.dueDate)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {getStatusBadge(loan)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button
-                                            onClick={() => handleReturnBook(loan.id)}
-                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
-                                        >
-                                            <FileText size={14}/>
-                                            반납
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* 대출 처리 모달 */}
-            {showLoanModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
-                        <h3 className="text-lg font-semibold mb-4">도서 대출</h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">사용자 ID</label>
-                                <input
-                                    type="number"
-                                    value={loanForm.userId}
-                                    onChange={(e) => setLoanForm({...loanForm, userId: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">도서 ID</label>
-                                <input
-                                    type="number"
-                                    value={loanForm.bookId}
-                                    onChange={(e) => setLoanForm({...loanForm, bookId: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2 mt-6">
-                            <button
-                                onClick={() => setShowLoanModal(false)}
-                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
-                            >
-                                취소
-                            </button>
-                            <button
-                                onClick={handleLoanBook}
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                            >
-                                대출
                             </button>
                         </div>
                     </div>
