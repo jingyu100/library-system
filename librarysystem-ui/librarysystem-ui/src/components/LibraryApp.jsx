@@ -719,7 +719,8 @@ const UserManagement = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                     {userLoans.map((loan) => (
-                                        <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                                        <tr key={loan.id}
+                                            className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
                                             <td className="px-4 py-2 text-sm text-gray-900 border-b">
                                                 {loan.id}
                                             </td>
@@ -1113,18 +1114,6 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
         }
     };
 
-    const testConnection = async () => {
-        try {
-            setDebugInfo('연결 테스트 중...');
-            const response = await publicApiCall('/api/public/books/search?page=0&size=1');
-            setDebugInfo('백엔드 연결 성공!');
-            console.log('연결 테스트 성공:', response);
-        } catch (error) {
-            setDebugInfo(`연결 오류: ${error.message}`);
-            console.error('연결 테스트 실패:', error);
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
             <div className="max-w-md w-full mx-4">
@@ -1140,16 +1129,6 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
                                 <strong>디버그:</strong> {debugInfo}
                             </div>
                         )}
-
-                        {/* 연결 테스트 버튼 */}
-                        <div className="mb-4">
-                            <button
-                                onClick={testConnection}
-                                className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                            >
-                                백엔드 연결 테스트
-                            </button>
-                        </div>
 
                         {error && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
