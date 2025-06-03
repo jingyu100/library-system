@@ -4,6 +4,9 @@ import com.example.librarysystem.dto.LoanDto;
 import com.example.librarysystem.dto.LoanRequest;
 import com.example.librarysystem.service.LoanService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +20,22 @@ public class AdminLoanController {
     private final LoanService loanService;
 
     @GetMapping
-    public ResponseEntity<List<LoanDto>> getAllActiveLoans() {
-        List<LoanDto> loans = loanService.getAllActiveLoans();
+    public ResponseEntity<Page<LoanDto>> getAllActiveLoans(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LoanDto> loans = loanService.getAllActiveLoansWithPaging(pageable);
+        return ResponseEntity.ok(loans);
+    }
+
+    // 검색 기능
+    @GetMapping("/search")
+    public ResponseEntity<Page<LoanDto>> searchLoans(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<LoanDto> loans = loanService.searchLoans(query, pageable);
         return ResponseEntity.ok(loans);
     }
 
@@ -34,7 +51,7 @@ public class AdminLoanController {
         return ResponseEntity.ok(loans);
     }
 
-    @PostMapping("/loan")
+    @PostMapping
     public ResponseEntity<LoanDto> loanBook(@RequestBody LoanRequest request) {
         try {
             LoanDto loan = loanService.loanBook(request);
@@ -44,7 +61,7 @@ public class AdminLoanController {
         }
     }
 
-    @PostMapping("/return/{loanId}")
+    @PutMapping("/{loanId}/return")
     public ResponseEntity<LoanDto> returnBook(@PathVariable Long loanId) {
         try {
             LoanDto loan = loanService.returnBook(loanId);

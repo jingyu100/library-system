@@ -7,6 +7,8 @@ import com.example.librarysystem.domain.enums.LoanStatus;
 import com.example.librarysystem.dto.*;
 import com.example.librarysystem.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,41 +55,6 @@ public class LoanService {
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public LoanDto loanBook(LoanRequest request) {
-        Member member = memberService.findByMemberName(getUsernameById(request.getUserId()))
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
-        Book book = bookService.findById(request.getBookId())
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
-
-        if (!book.isAvailable()) {
-            throw new IllegalStateException("Book is not available for loan");
-        }
-
-        // 기존 대출 확인
-        Optional<Loan> existingLoan = loanRepository.findByBookIdAndStatus(book.getId(), LoanStatus.ACTIVE);
-        if (existingLoan.isPresent()) {
-            throw new IllegalStateException("Book is already loaned");
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dueDate = now.plusDays(15);
-
-        Loan loan = Loan.builder()
-                .member(member)
-                .book(book)
-                .loanDate(now)
-                .dueDate(dueDate)
-                .status(LoanStatus.ACTIVE)
-                .build();
-
-        book.loanOut();
-
-        Loan savedLoan = loanRepository.save(loan);
-        return convertToDto(savedLoan);
     }
 
     @Transactional
@@ -192,5 +159,54 @@ public class LoanService {
                 .overdueLoans(overdueLoans)
                 .returnedLoans(returnedLoans)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LoanDto> getAllActiveLoansWithPaging(Pageable pageable) {
+        Page<Loan> loans = loanRepository.findByStatusWithPaging(LoanStatus.ACTIVE, pageable);
+        return loans.map(this::convertToDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<LoanDto> searchLoans(String query, Pageable pageable) {
+        Page<Loan> loans = loanRepository.searchLoans(query, pageable);
+        return loans.map(this::convertToDto);
+    }
+
+    @Transactional
+    public LoanDto loanBook(LoanRequest request) {
+        Member member = memberService.findByMemberName(getUsernameById(request.getUserId()))
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        Book book = bookService.findById(request.getBookId())
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+
+        if (!book.isAvailable()) {
+            throw new IllegalStateException("Book is not available for loan");
+        }
+
+        // 기존 대출 확인
+        Optional<Loan> existingLoan = loanRepository.findByBookIdAndStatus(book.getId(), LoanStatus.ACTIVE);
+        if (existingLoan.isPresent()) {
+            throw new IllegalStateException("Book is already loaned");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        // loanDays 필드 사용하도록 수정
+        int days = request.getLoanDays() != null ? request.getLoanDays() : 14;
+        LocalDateTime dueDate = now.plusDays(days);
+
+        Loan loan = Loan.builder()
+                .member(member)
+                .book(book)
+                .loanDate(now)
+                .dueDate(dueDate)
+                .status(LoanStatus.ACTIVE)
+                .build();
+
+        book.loanOut();
+
+        Loan savedLoan = loanRepository.save(loan);
+        return convertToDto(savedLoan);
     }
 }
