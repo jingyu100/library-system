@@ -620,6 +620,7 @@ const UserManagement = () => {
                 </div>
             )}
 
+            {/* 사용자 대출 현황 모달 */}
             {showLoanModal && selectedUser && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
@@ -648,8 +649,10 @@ const UserManagement = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* 대출 통계 정보 */}
                         {userStatistics && (
-                            <div className="border-t pt-4">
+                            <div className="border-t pt-4 mb-4">
                                 <h4 className="font-medium mb-3">대출 통계</h4>
                                 <div className="grid grid-cols-4 gap-4">
                                     <div className="text-center p-3 bg-blue-50 rounded-lg">
@@ -679,99 +682,86 @@ const UserManagement = () => {
                                 </div>
                             </div>
                         )}
+
+                        {loanLoading ? (
+                            <div className="text-center py-8">로딩 중...</div>
+                        ) : userLoans.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                                대출 기록이 없습니다.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full border border-gray-200">
+                                    <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출번호
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            도서명
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            저자
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납예정일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            상태
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                    {userLoans.map((loan) => (
+                                        <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.id}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.book.title}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.book.author}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.loanDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.dueDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {getLoanStatusBadge(loan)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end mt-6">
+                            <button
+                                onClick={() => setShowLoanModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                            >
+                                닫기
+                            </button>
+                        </div>
                     </div>
-                    <span className="font-medium">연락처:</span> {selectedUser.contact}
                 </div>
-                <div className="col-span-2">
-                <span className="font-medium">메모:</span> {selectedUser.memo || '-'}
+            )}
         </div>
-</div>
-</div>
-
-    {
-        loanLoading ? (
-            <div className="text-center py-8">로딩 중...</div>
-        ) : userLoans.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-                대출 기록이 없습니다.
-            </div>
-        ) : (
-            <div className="overflow-x-auto">
-                <table className="w-full border border-gray-200">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            대출번호
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            도서명
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            저자
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            대출일
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            반납예정일
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            반납일
-                        </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                            상태
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                    {userLoans.map((loan) => (
-                        <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {loan.id}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {loan.book.title}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {loan.book.author}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {formatDate(loan.loanDate)}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {formatDate(loan.dueDate)}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                {getLoanStatusBadge(loan)}
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-        )
-    }
-
-    <div className="flex justify-end mt-6">
-        <button
-            onClick={() => setShowLoanModal(false)}
-            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-        >
-            닫기
-        </button>
-    </div>
-</div>
-</div>
-)
-}
-</div>
-)
-;
-}
-;
+    );
+};
 
 // 관리자 앱 컴포넌트
 const AdminApp = ({onLogout}) => {
@@ -1772,140 +1762,45 @@ const LoanManagement = () => {
             </div>
 
             {/* 대출 처리 모달 */}
-            {showLoanModal && selectedUser && (
+            {showLoanModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold">
-                                {selectedUser.username} 사용자 대출 현황
-                            </h3>
+                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
+                        <h3 className="text-lg font-semibold mb-4">도서 대출</h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">사용자 ID</label>
+                                <input
+                                    type="number"
+                                    value={loanForm.userId}
+                                    onChange={(e) => setLoanForm({...loanForm, userId: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">도서 ID</label>
+                                <input
+                                    type="number"
+                                    value={loanForm.bookId}
+                                    onChange={(e) => setLoanForm({...loanForm, bookId: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-6">
                             <button
                                 onClick={() => setShowLoanModal(false)}
-                                className="text-gray-500 hover:text-gray-700"
+                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
                             >
-                                <X size={20}/>
+                                취소
                             </button>
-                        </div>
-
-                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <span className="font-medium">사용자 ID:</span> {selectedUser.id}
-                                </div>
-                                <div>
-                                    <span className="font-medium">연락처:</span> {selectedUser.contact}
-                                </div>
-                                <div className="col-span-2">
-                                    <span className="font-medium">메모:</span> {selectedUser.memo || '-'}
-                                </div>
-                            </div>
-
-                            {/* 대출 통계 정보 */}
-                            {userStatistics && (
-                                <div className="border-t pt-4">
-                                    <h4 className="font-medium mb-3">대출 통계</h4>
-                                    <div className="grid grid-cols-4 gap-4">
-                                        <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-blue-600">
-                                                {userStatistics.totalLoans}
-                                            </div>
-                                            <div className="text-sm text-gray-600">총 대출</div>
-                                        </div>
-                                        <div className="text-center p-3 bg-green-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-green-600">
-                                                {userStatistics.activeLoans}
-                                            </div>
-                                            <div className="text-sm text-gray-600">대출 중</div>
-                                        </div>
-                                        <div className="text-center p-3 bg-red-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-red-600">
-                                                {userStatistics.overdueLoans}
-                                            </div>
-                                            <div className="text-sm text-gray-600">연체</div>
-                                        </div>
-                                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-gray-600">
-                                                {userStatistics.returnedLoans}
-                                            </div>
-                                            <div className="text-sm text-gray-600">반납 완료</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {loanLoading ? (
-                            <div className="text-center py-8">로딩 중...</div>
-                        ) : userLoans.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
-                                대출 기록이 없습니다.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full border border-gray-200">
-                                    <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            대출번호
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            도서명
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            저자
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            대출일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            반납예정일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            반납일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            상태
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                    {userLoans.map((loan) => (
-                                        <tr key={loan.id}
-                                            className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.id}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.book.title}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.book.author}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {formatDate(loan.loanDate)}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {formatDate(loan.dueDate)}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {getLoanStatusBadge(loan)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        <div className="flex justify-end mt-6">
                             <button
-                                onClick={() => setShowLoanModal(false)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                                onClick={handleLoanBook}
+                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
-                                닫기
+                                대출
                             </button>
                         </div>
                     </div>
@@ -1914,6 +1809,5 @@ const LoanManagement = () => {
         </div>
     );
 };
-
 
 export default LibraryApp;
