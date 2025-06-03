@@ -4,10 +4,7 @@ import com.example.librarysystem.domain.Book;
 import com.example.librarysystem.domain.Loan;
 import com.example.librarysystem.domain.Member;
 import com.example.librarysystem.domain.enums.LoanStatus;
-import com.example.librarysystem.dto.BookDto;
-import com.example.librarysystem.dto.LoanDto;
-import com.example.librarysystem.dto.LoanRequest;
-import com.example.librarysystem.dto.MemberDto;
+import com.example.librarysystem.dto.*;
 import com.example.librarysystem.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -154,6 +151,46 @@ public class LoanService {
                 .returnDate(loan.getReturnDate())
                 .status(loan.getStatus())
                 .overdue(loan.isOverdue())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoanDto> getAllUserLoans(Long userId) {
+        return loanRepository.findAllByMemberIdOrderByLoanDateDesc(userId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LoanDto> getUserActiveLoans(Long userId) {
+        return loanRepository.findByMemberIdAndStatus(userId, LoanStatus.ACTIVE)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public UserLoanStatistics getUserLoanStatistics(Long userId) {
+        List<Loan> allLoans = loanRepository.findAllByMemberIdOrderByLoanDateDesc(userId);
+
+        long totalLoans = allLoans.size();
+        long activeLoans = allLoans.stream()
+                .filter(loan -> loan.getStatus() == LoanStatus.ACTIVE)
+                .count();
+        long overdueLoans = allLoans.stream()
+                .filter(Loan::isOverdue)
+                .count();
+        long returnedLoans = allLoans.stream()
+                .filter(loan -> loan.getStatus() == LoanStatus.RETURNED)
+                .count();
+
+        return UserLoanStatistics.builder()
+                .userId(userId)
+                .totalLoans(totalLoans)
+                .activeLoans(activeLoans)
+                .overdueLoans(overdueLoans)
+                .returnedLoans(returnedLoans)
                 .build();
     }
 }

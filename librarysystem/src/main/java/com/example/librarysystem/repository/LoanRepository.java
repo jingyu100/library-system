@@ -26,4 +26,16 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT l FROM Loan l JOIN FETCH l.member JOIN FETCH l.book WHERE l.book.id = :bookId ORDER BY l.loanDate DESC")
     List<Loan> findByBookIdOrderByLoanDateDesc(@Param("bookId") Long bookId);
+
+    @Query("SELECT l FROM Loan l JOIN FETCH l.member JOIN FETCH l.book WHERE l.member.id = :userId ORDER BY l.loanDate DESC")
+    List<Loan> findAllByMemberIdOrderByLoanDateDesc(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(l) FROM Loan l WHERE l.member.id = :userId")
+    long countByMemberId(@Param("userId") Long userId);
+
+    @Query("SELECT COUNT(l) FROM Loan l WHERE l.member.id = :userId AND l.status = :status")
+    long countByMemberIdAndStatus(@Param("userId") Long userId, @Param("status") LoanStatus status);
+
+    @Query("SELECT COUNT(l) FROM Loan l WHERE l.member.id = :userId AND l.dueDate < :currentDate AND l.status = :status")
+    long countOverdueLoansByMemberId(@Param("userId") Long userId, @Param("currentDate") LocalDateTime currentDate, @Param("status") LoanStatus status);
 }
