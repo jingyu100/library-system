@@ -1,5 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Users, FileText, Settings, LogOut, Plus, Edit, Trash2, BarChart3, AlertTriangle } from 'lucide-react';
+import React, {useState, useEffect} from 'react';
+import {
+    Search,
+    BookOpen,
+    Users,
+    FileText,
+    Settings,
+    LogOut,
+    Plus,
+    Edit,
+    Trash2,
+    BarChart3,
+    AlertTriangle,
+    X
+} from 'lucide-react';
+
 
 // API 기본 URL 설정
 const API_BASE_URL = 'http://localhost:8080';
@@ -13,7 +27,7 @@ const apiCall = async (url, options = {}) => {
 
     const defaultHeaders = {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
+        ...(token && {'Authorization': `Bearer ${token}`})
     };
 
     try {
@@ -124,12 +138,12 @@ const publicApiCall = async (url, options = {}) => {
 };
 
 // 네비게이션 컴포넌트
-const AdminNav = ({ currentPage, onNavigate, onLogout }) => {
+const AdminNav = ({currentPage, onNavigate, onLogout}) => {
     const navItems = [
-        { id: 'dashboard', label: '대시보드', icon: BarChart3 },
-        { id: 'users', label: '사용자 관리', icon: Users },
-        { id: 'books', label: '도서 관리', icon: BookOpen },
-        { id: 'loans', label: '대출 관리', icon: FileText }
+        {id: 'dashboard', label: '대시보드', icon: BarChart3},
+        {id: 'users', label: '사용자 관리', icon: Users},
+        {id: 'books', label: '도서 관리', icon: BookOpen},
+        {id: 'loans', label: '대출 관리', icon: FileText}
     ];
 
     return (
@@ -150,7 +164,7 @@ const AdminNav = ({ currentPage, onNavigate, onLogout }) => {
                                             : 'hover:bg-gray-700'
                                     }`}
                                 >
-                                    <Icon size={16} />
+                                    <Icon size={16}/>
                                     {item.label}
                                 </button>
                             );
@@ -161,7 +175,7 @@ const AdminNav = ({ currentPage, onNavigate, onLogout }) => {
                     onClick={onLogout}
                     className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 rounded transition-colors"
                 >
-                    <LogOut size={16} />
+                    <LogOut size={16}/>
                     로그아웃
                 </button>
             </div>
@@ -236,7 +250,7 @@ const AdminDashboard = () => {
                             <p className="text-3xl font-bold">{stats.activeLoans}</p>
                             <p className="text-blue-100">권</p>
                         </div>
-                        <FileText size={48} className="opacity-80" />
+                        <FileText size={48} className="opacity-80"/>
                     </div>
                 </div>
 
@@ -247,7 +261,7 @@ const AdminDashboard = () => {
                             <p className="text-3xl font-bold">{stats.overdueLoans}</p>
                             <p className="text-red-100">권</p>
                         </div>
-                        <AlertTriangle size={48} className="opacity-80" />
+                        <AlertTriangle size={48} className="opacity-80"/>
                     </div>
                 </div>
 
@@ -258,7 +272,7 @@ const AdminDashboard = () => {
                             <p className="text-3xl font-bold">{stats.totalUsers}</p>
                             <p className="text-green-100">명</p>
                         </div>
-                        <Users size={48} className="opacity-80" />
+                        <Users size={48} className="opacity-80"/>
                     </div>
                 </div>
 
@@ -269,7 +283,7 @@ const AdminDashboard = () => {
                             <p className="text-3xl font-bold">{stats.totalBooks}</p>
                             <p className="text-purple-100">권</p>
                         </div>
-                        <BookOpen size={48} className="opacity-80" />
+                        <BookOpen size={48} className="opacity-80"/>
                     </div>
                 </div>
             </div>
@@ -285,10 +299,11 @@ const UserManagement = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [showModal, setShowModal] = useState(false);
-    const [showLoanModal, setShowLoanModal] = useState(false); // 새로 추가
-    const [selectedUser, setSelectedUser] = useState(null); // 새로 추가
-    const [userLoans, setUserLoans] = useState([]); // 새로 추가
-    const [loanLoading, setLoanLoading] = useState(false); // 새로 추가
+    const [showLoanModal, setShowLoanModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [userLoans, setUserLoans] = useState([]);
+    const [loanLoading, setLoanLoading] = useState(false);
+    const [userStatistics, setUserStatistics] = useState(null);
     const [editingUser, setEditingUser] = useState(null);
     const [userForm, setUserForm] = useState({
         username: '',
@@ -313,12 +328,17 @@ const UserManagement = () => {
         }
     };
 
-    // 새로 추가: 사용자 대출 현황 조회 함수
+    // 사용자 대출 현황 조회 함수
     const loadUserLoans = async (userId) => {
         try {
             setLoanLoading(true);
-            const response = await apiCall(`/api/admin/loans/user/${userId}`);
-            setUserLoans(response || []);
+            // 모든 대출 기록과 통계 정보를 동시에 조회
+            const [loansResponse, statisticsResponse] = await Promise.all([
+                apiCall(`/api/admin/users/${userId}/loans`),
+                apiCall(`/api/admin/users/${userId}/loan-statistics`)
+            ]);
+            setUserLoans(loansResponse || []);
+            setUserStatistics(statisticsResponse || null);
         } catch (error) {
             console.error('Failed to load user loans:', error);
             alert('사용자 대출 현황을 불러오는데 실패했습니다.');
@@ -327,7 +347,7 @@ const UserManagement = () => {
         }
     };
 
-    // 새로 추가: 사용자 대출 현황 모달 열기
+    // 사용자 대출 현황 모달 열기
     const handleViewUserLoans = async (user) => {
         setSelectedUser(user);
         setShowLoanModal(true);
@@ -380,7 +400,7 @@ const UserManagement = () => {
 
             setShowModal(false);
             setEditingUser(null);
-            setUserForm({ username: '', password: '', contact: '', memo: '' });
+            setUserForm({username: '', password: '', contact: '', memo: ''});
             loadUsers(currentPage);
             alert('사용자가 저장되었습니다.');
         } catch (error) {
@@ -404,7 +424,7 @@ const UserManagement = () => {
         if (!window.confirm('정말로 이 사용자를 삭제하시겠습니까?')) return;
 
         try {
-            await apiCall(`/api/admin/users/${userId}`, { method: 'DELETE' });
+            await apiCall(`/api/admin/users/${userId}`, {method: 'DELETE'});
             loadUsers(currentPage);
             alert('사용자가 삭제되었습니다.');
         } catch (error) {
@@ -415,7 +435,7 @@ const UserManagement = () => {
 
     const openAddModal = () => {
         setEditingUser(null);
-        setUserForm({ username: '', password: '', contact: '', memo: '' });
+        setUserForm({username: '', password: '', contact: '', memo: ''});
         setShowModal(true);
     };
 
@@ -435,7 +455,7 @@ const UserManagement = () => {
                     onClick={openAddModal}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
                 >
-                    <Plus size={16} />
+                    <Plus size={16}/>
                     사용자 추가
                 </button>
             </div>
@@ -465,21 +485,21 @@ const UserManagement = () => {
                                             onClick={() => handleViewUserLoans(user)}
                                             className="text-green-600 hover:text-green-900 flex items-center gap-1"
                                         >
-                                            <FileText size={14} />
+                                            <FileText size={14}/>
                                             대출현황
                                         </button>
                                         <button
                                             onClick={() => handleEditUser(user)}
                                             className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                                         >
-                                            <Edit size={14} />
+                                            <Edit size={14}/>
                                             수정
                                         </button>
                                         <button
                                             onClick={() => handleDeleteUser(user.id)}
                                             className="text-red-600 hover:text-red-900 flex items-center gap-1"
                                         >
-                                            <Trash2 size={14} />
+                                            <Trash2 size={14}/>
                                             삭제
                                         </button>
                                     </div>
@@ -501,7 +521,7 @@ const UserManagement = () => {
                             이전
                         </button>
 
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
                             const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
                             return (
                                 <button
@@ -611,7 +631,7 @@ const UserManagement = () => {
                                 onClick={() => setShowLoanModal(false)}
                                 className="text-gray-500 hover:text-gray-700"
                             >
-                                <X size={20} />
+                                <X size={20}/>
                             </button>
                         </div>
 
@@ -628,89 +648,133 @@ const UserManagement = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {loanLoading ? (
-                            <div className="text-center py-8">로딩 중...</div>
-                        ) : userLoans.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
-                                대출 기록이 없습니다.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full border border-gray-200">
-                                    <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            대출번호
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            도서명
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            저자
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            대출일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            반납예정일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            반납일
-                                        </th>
-                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
-                                            상태
-                                        </th>
-                                    </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200">
-                                    {userLoans.map((loan) => (
-                                        <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.id}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.book.title}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.book.author}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {formatDate(loan.loanDate)}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {formatDate(loan.dueDate)}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
-                                            </td>
-                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
-                                                {getLoanStatusBadge(loan)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    </tbody>
-                                </table>
+                        {userStatistics && (
+                            <div className="border-t pt-4">
+                                <h4 className="font-medium mb-3">대출 통계</h4>
+                                <div className="grid grid-cols-4 gap-4">
+                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {userStatistics.totalLoans}
+                                        </div>
+                                        <div className="text-sm text-gray-600">총 대출</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {userStatistics.activeLoans}
+                                        </div>
+                                        <div className="text-sm text-gray-600">대출 중</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-red-50 rounded-lg">
+                                        <div className="text-2xl font-bold text-red-600">
+                                            {userStatistics.overdueLoans}
+                                        </div>
+                                        <div className="text-sm text-gray-600">연체</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                        <div className="text-2xl font-bold text-gray-600">
+                                            {userStatistics.returnedLoans}
+                                        </div>
+                                        <div className="text-sm text-gray-600">반납 완료</div>
+                                    </div>
+                                </div>
                             </div>
                         )}
-
-                        <div className="flex justify-end mt-6">
-                            <button
-                                onClick={() => setShowLoanModal(false)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-                            >
-                                닫기
-                            </button>
-                        </div>
                     </div>
+                    <span className="font-medium">연락처:</span> {selectedUser.contact}
                 </div>
-            )}
+                <div className="col-span-2">
+                <span className="font-medium">메모:</span> {selectedUser.memo || '-'}
         </div>
-    );
-};
+</div>
+</div>
+
+    {
+        loanLoading ? (
+            <div className="text-center py-8">로딩 중...</div>
+        ) : userLoans.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+                대출 기록이 없습니다.
+            </div>
+        ) : (
+            <div className="overflow-x-auto">
+                <table className="w-full border border-gray-200">
+                    <thead className="bg-gray-50">
+                    <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            대출번호
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            도서명
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            저자
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            대출일
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            반납예정일
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            반납일
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                            상태
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                    {userLoans.map((loan) => (
+                        <tr key={loan.id} className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {loan.id}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {loan.book.title}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {loan.book.author}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {formatDate(loan.loanDate)}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {formatDate(loan.dueDate)}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                {getLoanStatusBadge(loan)}
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
+
+    <div className="flex justify-end mt-6">
+        <button
+            onClick={() => setShowLoanModal(false)}
+            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+        >
+            닫기
+        </button>
+    </div>
+</div>
+</div>
+)
+}
+</div>
+)
+;
+}
+;
 
 // 관리자 앱 컴포넌트
-const AdminApp = ({ onLogout }) => {
+const AdminApp = ({onLogout}) => {
     const [currentPage, setCurrentPage] = useState('dashboard');
 
     const handleLogout = () => {
@@ -722,13 +786,13 @@ const AdminApp = ({ onLogout }) => {
     const renderPage = () => {
         switch (currentPage) {
             case 'users':
-                return <UserManagement />;
+                return <UserManagement/>;
             case 'books':
-                return <BookManagement />;
+                return <BookManagement/>;
             case 'loans':
-                return <LoanManagement />;
+                return <LoanManagement/>;
             default:
-                return <AdminDashboard />;
+                return <AdminDashboard/>;
         }
     };
 
@@ -745,7 +809,7 @@ const AdminApp = ({ onLogout }) => {
 };
 
 // 메인 홈 페이지 컴포넌트
-const HomePage = ({ onNavigate }) => {
+const HomePage = ({onNavigate}) => {
     return (
         <div className="min-h-screen bg-gray-100">
             <div className="container mx-auto px-4 py-8">
@@ -753,7 +817,7 @@ const HomePage = ({ onNavigate }) => {
                     <div className="bg-white rounded-lg shadow-lg">
                         <div className="bg-blue-600 text-white p-6 rounded-t-lg text-center">
                             <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
-                                <BookOpen size={32} />
+                                <BookOpen size={32}/>
                                 미니 도서관 관리 시스템
                             </h1>
                         </div>
@@ -761,7 +825,7 @@ const HomePage = ({ onNavigate }) => {
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
                                     <div className="text-center">
-                                        <Search size={48} className="mx-auto text-blue-600 mb-4" />
+                                        <Search size={48} className="mx-auto text-blue-600 mb-4"/>
                                         <h2 className="text-xl font-semibold mb-2">사용자 페이지</h2>
                                         <p className="text-gray-600 mb-4">도서 검색 및 조회</p>
                                         <button
@@ -774,7 +838,7 @@ const HomePage = ({ onNavigate }) => {
                                 </div>
                                 <div className="bg-green-50 p-6 rounded-lg border border-green-200">
                                     <div className="text-center">
-                                        <Settings size={48} className="mx-auto text-green-600 mb-4" />
+                                        <Settings size={48} className="mx-auto text-green-600 mb-4"/>
                                         <h2 className="text-xl font-semibold mb-2">관리자 페이지</h2>
                                         <p className="text-gray-600 mb-4">도서관 관리</p>
                                         <button
@@ -795,7 +859,7 @@ const HomePage = ({ onNavigate }) => {
 };
 
 // 사용자 도서 검색 페이지
-const UserSearchPage = ({ onNavigate }) => {
+const UserSearchPage = ({onNavigate}) => {
     const [searchForm, setSearchForm] = useState({
         title: '',
         author: '',
@@ -949,7 +1013,9 @@ const UserSearchPage = ({ onNavigate }) => {
                                     <p><span className="font-medium">저자:</span> {book.author}</p>
                                     <p><span className="font-medium">출판사:</span> {book.publisher}</p>
                                     <p><span className="font-medium">출간년:</span> {book.publishedAt || 'N/A'}</p>
-                                    <p><span className="font-medium">가격:</span> {book.price ? `${book.price.toLocaleString()}원` : 'N/A'}</p>
+                                    <p><span
+                                        className="font-medium">가격:</span> {book.price ? `${book.price.toLocaleString()}원` : 'N/A'}
+                                    </p>
                                 </div>
                                 <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                                     book.available
@@ -974,7 +1040,7 @@ const UserSearchPage = ({ onNavigate }) => {
                             이전
                         </button>
 
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
                             const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
                             return (
                                 <button
@@ -1006,7 +1072,7 @@ const UserSearchPage = ({ onNavigate }) => {
 };
 
 // 관리자 로그인 페이지
-const AdminLoginPage = ({ onNavigate, onLogin }) => {
+const AdminLoginPage = ({onNavigate, onLogin}) => {
     const [credentials, setCredentials] = useState({
         username: 'admin',
         password: 'admin123'
@@ -1079,7 +1145,8 @@ const AdminLoginPage = ({ onNavigate, onLogin }) => {
                     <div className="p-6">
                         {/* 디버그 정보 */}
                         {debugInfo && (
-                            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
+                            <div
+                                className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
                                 <strong>디버그:</strong> {debugInfo}
                             </div>
                         )}
@@ -1188,16 +1255,16 @@ const LibraryApp = () => {
     const renderPage = () => {
         switch (currentPage) {
             case 'user':
-                return <UserSearchPage onNavigate={handleNavigate} />;
+                return <UserSearchPage onNavigate={handleNavigate}/>;
             case 'admin-login':
-                return <AdminLoginPage onNavigate={handleNavigate} onLogin={handleLogin} />;
+                return <AdminLoginPage onNavigate={handleNavigate} onLogin={handleLogin}/>;
             case 'admin-dashboard':
                 if (!isLoggedIn) {
-                    return <AdminLoginPage onNavigate={handleNavigate} onLogin={handleLogin} />;
+                    return <AdminLoginPage onNavigate={handleNavigate} onLogin={handleLogin}/>;
                 }
-                return <AdminApp onLogout={handleLogout} />;
+                return <AdminApp onLogout={handleLogout}/>;
             default:
-                return <HomePage onNavigate={handleNavigate} />;
+                return <HomePage onNavigate={handleNavigate}/>;
         }
     };
 
@@ -1265,7 +1332,7 @@ const BookManagement = () => {
 
             setShowModal(false);
             setEditingBook(null);
-            setBookForm({ title: '', author: '', publisher: '', publishedAt: '', price: '' });
+            setBookForm({title: '', author: '', publisher: '', publishedAt: '', price: ''});
             loadBooks(currentPage);
             alert('도서가 저장되었습니다.');
         } catch (error) {
@@ -1290,7 +1357,7 @@ const BookManagement = () => {
         if (!window.confirm('정말로 이 도서를 삭제하시겠습니까?')) return;
 
         try {
-            await apiCall(`/api/admin/books/${bookId}`, { method: 'DELETE' });
+            await apiCall(`/api/admin/books/${bookId}`, {method: 'DELETE'});
             loadBooks(currentPage);
             alert('도서가 삭제되었습니다.');
         } catch (error) {
@@ -1301,7 +1368,7 @@ const BookManagement = () => {
 
     const openAddModal = () => {
         setEditingBook(null);
-        setBookForm({ title: '', author: '', publisher: '', publishedAt: '', price: '' });
+        setBookForm({title: '', author: '', publisher: '', publishedAt: '', price: ''});
         setShowModal(true);
     };
 
@@ -1333,7 +1400,7 @@ const BookManagement = () => {
                     onClick={openAddModal}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
                 >
-                    <Plus size={16} />
+                    <Plus size={16}/>
                     도서 추가
                 </button>
             </div>
@@ -1373,14 +1440,14 @@ const BookManagement = () => {
                                             onClick={() => handleEditBook(book)}
                                             className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                                         >
-                                            <Edit size={14} />
+                                            <Edit size={14}/>
                                             수정
                                         </button>
                                         <button
                                             onClick={() => handleDeleteBook(book.id)}
                                             className="text-red-600 hover:text-red-900 flex items-center gap-1"
                                         >
-                                            <Trash2 size={14} />
+                                            <Trash2 size={14}/>
                                             삭제
                                         </button>
                                     </div>
@@ -1402,7 +1469,7 @@ const BookManagement = () => {
                             이전
                         </button>
 
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
                             const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
                             return (
                                 <button
@@ -1559,7 +1626,7 @@ const LoanManagement = () => {
             });
 
             setShowLoanModal(false);
-            setLoanForm({ userId: '', bookId: '' });
+            setLoanForm({userId: '', bookId: ''});
             loadLoans();
             alert('도서가 대출되었습니다.');
         } catch (error) {
@@ -1572,7 +1639,7 @@ const LoanManagement = () => {
         if (!window.confirm('정말로 이 도서를 반납 처리하시겠습니까?')) return;
 
         try {
-            await apiCall(`/api/admin/loans/return/${loanId}`, { method: 'POST' });
+            await apiCall(`/api/admin/loans/return/${loanId}`, {method: 'POST'});
             loadLoans();
             alert('도서가 반납되었습니다.');
         } catch (error) {
@@ -1618,7 +1685,7 @@ const LoanManagement = () => {
                     onClick={() => setShowLoanModal(true)}
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
                 >
-                    <Plus size={16} />
+                    <Plus size={16}/>
                     도서 대출
                 </button>
             </div>
@@ -1692,7 +1759,7 @@ const LoanManagement = () => {
                                             onClick={() => handleReturnBook(loan.id)}
                                             className="text-green-600 hover:text-green-900 flex items-center gap-1"
                                         >
-                                            <FileText size={14} />
+                                            <FileText size={14}/>
                                             반납
                                         </button>
                                     </td>
@@ -1705,47 +1772,140 @@ const LoanManagement = () => {
             </div>
 
             {/* 대출 처리 모달 */}
-            {showLoanModal && (
+            {showLoanModal && selectedUser && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
-                        <h3 className="text-lg font-semibold mb-4">도서 대출</h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">사용자 ID</label>
-                                <input
-                                    type="number"
-                                    value={loanForm.userId}
-                                    onChange={(e) => setLoanForm({...loanForm, userId: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="사용자 ID를 입력하세요"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">도서 ID</label>
-                                <input
-                                    type="number"
-                                    value={loanForm.bookId}
-                                    onChange={(e) => setLoanForm({...loanForm, bookId: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="도서 ID를 입력하세요"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-2 mt-6">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">
+                                {selectedUser.username} 사용자 대출 현황
+                            </h3>
                             <button
                                 onClick={() => setShowLoanModal(false)}
-                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                                className="text-gray-500 hover:text-gray-700"
                             >
-                                취소
+                                <X size={20}/>
                             </button>
+                        </div>
+
+                        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <span className="font-medium">사용자 ID:</span> {selectedUser.id}
+                                </div>
+                                <div>
+                                    <span className="font-medium">연락처:</span> {selectedUser.contact}
+                                </div>
+                                <div className="col-span-2">
+                                    <span className="font-medium">메모:</span> {selectedUser.memo || '-'}
+                                </div>
+                            </div>
+
+                            {/* 대출 통계 정보 */}
+                            {userStatistics && (
+                                <div className="border-t pt-4">
+                                    <h4 className="font-medium mb-3">대출 통계</h4>
+                                    <div className="grid grid-cols-4 gap-4">
+                                        <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-blue-600">
+                                                {userStatistics.totalLoans}
+                                            </div>
+                                            <div className="text-sm text-gray-600">총 대출</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-green-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {userStatistics.activeLoans}
+                                            </div>
+                                            <div className="text-sm text-gray-600">대출 중</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-red-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-red-600">
+                                                {userStatistics.overdueLoans}
+                                            </div>
+                                            <div className="text-sm text-gray-600">연체</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-gray-600">
+                                                {userStatistics.returnedLoans}
+                                            </div>
+                                            <div className="text-sm text-gray-600">반납 완료</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {loanLoading ? (
+                            <div className="text-center py-8">로딩 중...</div>
+                        ) : userLoans.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                                대출 기록이 없습니다.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full border border-gray-200">
+                                    <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출번호
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            도서명
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            저자
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            대출일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납예정일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            반납일
+                                        </th>
+                                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase border-b">
+                                            상태
+                                        </th>
+                                    </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                    {userLoans.map((loan) => (
+                                        <tr key={loan.id}
+                                            className={loan.overdue && loan.status !== 'RETURNED' ? 'bg-red-50' : ''}>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.id}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.book.title}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.book.author}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.loanDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {formatDate(loan.dueDate)}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {loan.returnDate ? formatDate(loan.returnDate) : '-'}
+                                            </td>
+                                            <td className="px-4 py-2 text-sm text-gray-900 border-b">
+                                                {getLoanStatusBadge(loan)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end mt-6">
                             <button
-                                onClick={handleLoanBook}
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                onClick={() => setShowLoanModal(false)}
+                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
                             >
-                                대출
+                                닫기
                             </button>
                         </div>
                     </div>
@@ -1754,7 +1914,6 @@ const LoanManagement = () => {
         </div>
     );
 };
-
 
 
 export default LibraryApp;
