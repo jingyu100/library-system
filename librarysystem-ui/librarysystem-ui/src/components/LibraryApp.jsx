@@ -71,9 +71,24 @@ const apiCall = async (url, options = {}) => {
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        const data = await response.json();
-        console.log('Success response:', data);
-        return data;
+        // 응답이 비어있거나 No Content인 경우 처리
+        if (response.status === 204 || response.headers.get('content-length') === '0') {
+            console.log('Success response: No content');
+            return null;
+        }
+
+        // Content-Type이 JSON인지 확인
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            console.log('Success response:', data);
+            return data;
+        } else {
+            // JSON이 아닌 경우 텍스트로 처리
+            const text = await response.text();
+            console.log('Success response (text):', text);
+            return text || null;
+        }
     } catch (error) {
         console.error('API Call Error:', error);
         throw error;
@@ -1119,13 +1134,11 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [debugInfo, setDebugInfo] = useState('');
 
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
         setLoading(true);
         setError('');
-        setDebugInfo('로그인 시도 중...');
 
         try {
             console.log('로그인 요청 데이터:', credentials);
@@ -1137,27 +1150,22 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
             });
 
             console.log('서버 응답:', response);
-            setDebugInfo(`서버 응답 받음: ${JSON.stringify(response)}`);
 
             if (response.error) {
                 setError(response.error);
-                setDebugInfo(`로그인 실패: ${response.error}`);
             } else if (response.accessToken) {
                 localStorage.setItem('accessToken', response.accessToken);
                 if (response.refreshToken) {
                     localStorage.setItem('refreshToken', response.refreshToken);
                 }
-                setDebugInfo('로그인 성공! 대시보드로 이동...');
                 onLogin(response.accessToken);
                 onNavigate('admin-dashboard');
             } else {
                 setError('잘못된 응답 형식입니다.');
-                setDebugInfo(`응답 형식 오류: ${JSON.stringify(response)}`);
             }
         } catch (error) {
             console.error('Login error:', error);
             setError(`로그인 중 오류: ${error.message}`);
-            setDebugInfo(`네트워크 오류: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -1171,14 +1179,6 @@ const AdminLoginPage = ({onNavigate, onLogin}) => {
                         <h2 className="text-2xl font-bold">관리자 로그인</h2>
                     </div>
                     <div className="p-6">
-                        {/* 디버그 정보 */}
-                        {debugInfo && (
-                            <div
-                                className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 text-sm">
-                                <strong>디버그:</strong> {debugInfo}
-                            </div>
-                        )}
-
                         {error && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                                 {error}
@@ -1815,7 +1815,7 @@ const BookManagement = () => {
                     <table className="w-full">
                         <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">번호</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">도서번호</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">제목</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">저자</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">출판사</th>
