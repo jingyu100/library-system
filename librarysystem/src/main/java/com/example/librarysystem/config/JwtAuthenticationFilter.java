@@ -3,6 +3,7 @@ package com.example.librarysystem.config;
 import com.example.librarysystem.dto.ResponseAccessToken;
 import com.example.librarysystem.dto.ResponseTokenError;
 import com.example.librarysystem.service.JwtService;
+import com.example.librarysystem.repository.RefreshTokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
@@ -24,6 +25,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final static String HEADER_STRING = "Authorization";
     private final static String REFRESH_HEADER_STRING = "Refresh-Token";
     private final static String TOKEN_PREFIX = "Bearer ";
@@ -43,7 +45,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (token != null) {
+                // Access Token 검증
                 Authentication authentication = jwtService.verifyToken(token);
+                String username = authentication.getName();
+
+                // Refresh Token이 DB에 존재하는지 확인
+                boolean hasValidRefreshToken = refreshTokenRepository.findByMember_Username(username).isPresent();
+
+                if (!hasValidRefreshToken) {
+                    // Refresh Token이 DB에 없으면 강제 로그아웃
+                    setErrorResponse(response, new RuntimeException("Session has been invalidated. Please login again."));
+                    return;
+                }
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(request, response);
