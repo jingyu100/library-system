@@ -1623,7 +1623,7 @@ const LibraryApp = () => {
 
             setAccessToken(null);
             setIsLoggedIn(false);
-            setCurrentPage('home');
+            setCurrentPage('admin-login');
         }
     };
 
