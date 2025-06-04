@@ -63,6 +63,9 @@ const apiCall = async (url, options = {}) => {
                 console.log('Unauthorized - removing tokens');
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
+
+                // 페이지 새로고침으로 로그인 상태 초기화
+                window.location.reload();
                 throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
             }
 
@@ -833,8 +836,6 @@ const AdminApp = ({onLogout}) => {
     const [currentPage, setCurrentPage] = useState('dashboard');
 
     const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
         onLogout();
     };
 
@@ -1596,12 +1597,34 @@ const LibraryApp = () => {
         setIsLoggedIn(true);
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        setAccessToken(null);
-        setIsLoggedIn(false);
-        setCurrentPage('home');
+    const handleLogout = async () => {
+        try {
+            // 서버에 로그아웃 요청으로 Refresh Token 무효화
+            const refreshToken = localStorage.getItem('refreshToken');
+
+            if (refreshToken) {
+                await apiCall('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Refresh-Token': refreshToken
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+            // API 실패해도 클라이언트 측 정리는 진행
+        } finally {
+            // 클라이언트 측 토큰 완전 삭제
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+
+            // sessionStorage도 정리
+            sessionStorage.clear();
+
+            setAccessToken(null);
+            setIsLoggedIn(false);
+            setCurrentPage('home');
+        }
     };
 
     const renderPage = () => {

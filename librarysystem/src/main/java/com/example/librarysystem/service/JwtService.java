@@ -6,6 +6,7 @@ import com.example.librarysystem.domain.Member;
 import com.example.librarysystem.dto.ResponseAccessToken;
 import com.example.librarysystem.repository.RefreshTokenRepository;
 import com.example.librarysystem.repository.MemberRepository;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -47,7 +48,7 @@ public class JwtService {
         return Jwts.parser().verifyWith(getSecretKey()).build();
     }
 
-    private JwtParser getRefreshJwtParser() {
+    public JwtParser getRefreshJwtParser() {
         return Jwts.parser().verifyWith(getRefreshSecretKey()).build();
     }
 
@@ -98,19 +99,39 @@ public class JwtService {
 
     @Transactional
     public ResponseAccessToken getAccessTokenByRefreshToken(String token) throws JwtException, UsernameNotFoundException {
-        String username = getRefreshJwtParser().parseSignedClaims(token).getPayload().getSubject();
-        Member member = memberRepository.findByUsername(username).orElse(null);
-        RefreshToken refreshToken = refreshTokenRepository.findByMember_Username(username).orElse(null);
+        try {
+            String username = getRefreshJwtParser().parseSignedClaims(token).getPayload().getSubject();
+            Member member = memberRepository.findByUsername(username).orElse(null);
+            RefreshToken refreshTokenEntity = refreshTokenRepository.findByMember_Username(username).orElse(null);
 
-        if (member == null) {
-            return ResponseAccessToken.builder().error("Unknown user.").build();
+            if (member == null) {
+                return ResponseAccessToken.builder().error("Unknown user.").build();
+            }
+
+            // DB에서 삭제된 Refresh Token은 무효화
+            if (refreshTokenEntity == null) {
+                return ResponseAccessToken.builder().error("Refresh token not found in database.").build();
+            }
+
+            // LocalStorage의 토큰과 DB의 토큰이 일치해야 함
+            if (!refreshTokenEntity.getRefreshToken().equals(token)) {
+                // 토큰이 다르면 보안 위험으로 간주하고 DB에서 삭제
+                refreshTokenRepository.delete(refreshTokenEntity);
+                return ResponseAccessToken.builder().error("Invalid refresh token.").build();
+            }
+
+            // Refresh Token 만료 시간 검증
+            try {
+                getRefreshJwtParser().parseSignedClaims(token);
+            } catch (ExpiredJwtException e) {
+                // 만료된 Refresh Token은 DB에서 삭제
+                refreshTokenRepository.delete(refreshTokenEntity);
+                return ResponseAccessToken.builder().error("Refresh token expired.").build();
+            }
+            return getAccessTokenByUsername(member);
+        } catch (Exception e) {
+            // 모든 예외 상황에서는 인증 실패로 처리
+            return ResponseAccessToken.builder().error("Token validation failed.").build();
         }
-
-        if (refreshToken != null && !refreshToken.getRefreshToken().equals(token)) {
-            refreshTokenRepository.delete(refreshToken);
-            return ResponseAccessToken.builder().error("Refresh Failed").build();
-        }
-
-        return getAccessTokenByUsername(member);
     }
 }
