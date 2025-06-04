@@ -321,6 +321,7 @@ const UserManagement = () => {
     const [loanLoading, setLoanLoading] = useState(false);
     const [userStatistics, setUserStatistics] = useState(null);
     const [editingUser, setEditingUser] = useState(null);
+    const [modalType, setModalType] = useState('user'); // 'user' or 'admin'
     const [userForm, setUserForm] = useState({
         username: '',
         password: '',
@@ -404,29 +405,36 @@ const UserManagement = () => {
 
     const handleSaveUser = async () => {
         try {
+            // 사용자 타입에 따라 다른 엔드포인트 사용
+            const baseUrl = modalType === 'admin' ? '/api/admin/users/admin' : '/api/admin/users';
             const url = editingUser
-                ? `/api/admin/users/${editingUser.id}`
-                : '/api/admin/users';
+                ? `${baseUrl}/${editingUser.id}`
+                : baseUrl;
             const method = editingUser ? 'PUT' : 'POST';
+
+            // 사용자 정보
+            const requestData = userForm;
 
             await apiCall(url, {
                 method,
-                body: JSON.stringify(userForm)
+                body: JSON.stringify(requestData)
             });
 
             setShowModal(false);
             setEditingUser(null);
             setUserForm({username: '', password: '', contact: '', memo: ''});
+            setModalType('user');
             loadUsers(currentPage);
-            alert('사용자가 저장되었습니다.');
+            alert(modalType === 'admin' ? '관리자가 저장되었습니다.' : '사용자가 저장되었습니다.');
         } catch (error) {
             console.error('Failed to save user:', error);
-            alert('사용자 저장에 실패했습니다.');
+            alert('저장에 실패했습니다.');
         }
     };
 
     const handleEditUser = (user) => {
         setEditingUser(user);
+        setModalType('user'); // 수정 시에는 항상 사용자로 처리
         setUserForm({
             username: user.username,
             password: '',
@@ -449,8 +457,16 @@ const UserManagement = () => {
         }
     };
 
-    const openAddModal = () => {
+    const openAddUserModal = () => {
         setEditingUser(null);
+        setModalType('user');
+        setUserForm({username: '', password: '', contact: '', memo: ''});
+        setShowModal(true);
+    };
+
+    const openAddAdminModal = () => {
+        setEditingUser(null);
+        setModalType('admin');
         setUserForm({username: '', password: '', contact: '', memo: ''});
         setShowModal(true);
     };
@@ -467,13 +483,22 @@ const UserManagement = () => {
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">사용자 관리</h2>
-                <button
-                    onClick={openAddModal}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <Plus size={16}/>
-                    사용자 추가
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={openAddUserModal}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <Plus size={16}/>
+                        사용자 추가
+                    </button>
+                    <button
+                        onClick={openAddAdminModal}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                    >
+                        <Plus size={16}/>
+                        관리자 추가
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-lg shadow">
@@ -565,12 +590,17 @@ const UserManagement = () => {
                 )}
             </div>
 
-            {/* 사용자 추가/수정 모달 */}
+            {/* 사용자/관리자 추가/수정 모달 */}
             {showModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
                         <h3 className="text-lg font-semibold mb-4">
-                            {editingUser ? '사용자 수정' : '사용자 추가'}
+                            {editingUser
+                                ? '사용자 수정'
+                                : modalType === 'admin'
+                                    ? '관리자 추가'
+                                    : '사용자 추가'
+                            }
                         </h3>
 
                         <div className="space-y-4">
@@ -584,18 +614,21 @@ const UserManagement = () => {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
-                                <input
-                                    type="password"
-                                    value={userForm.password}
-                                    onChange={(e) => setUserForm({...userForm, password: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                {editingUser && (
-                                    <p className="text-sm text-gray-500 mt-1">비워두면 비밀번호가 변경되지 않습니다.</p>
-                                )}
-                            </div>
+                            {/* 비밀번호 필드는 관리자 추가 시 또는 수정 시에만 표시 */}
+                            {(modalType === 'admin' || editingUser) && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                                    <input
+                                        type="password"
+                                        value={userForm.password}
+                                        onChange={(e) => setUserForm({...userForm, password: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    {editingUser && (
+                                        <p className="text-sm text-gray-500 mt-1">비워두면 비밀번호가 변경되지 않습니다.</p>
+                                    )}
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">연락처</label>

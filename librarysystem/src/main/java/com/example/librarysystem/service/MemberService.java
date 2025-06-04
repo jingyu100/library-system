@@ -56,6 +56,24 @@ public class MemberService {
     }
 
     @Transactional
+    public MemberDto createAdmin(MemberCreateRequest request) {
+        if (memberRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        Member member = Member.builder()
+                .username(request.getUsername())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .contact(request.getContact())
+                .memo(request.getMemo())
+                .userType(UserType.ADMIN)
+                .build();
+
+        Member savedMember = memberRepository.save(member);
+        return convertToDto(savedMember);
+    }
+
+    @Transactional
     public MemberDto updateMember(Long id, MemberCreateRequest request) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));

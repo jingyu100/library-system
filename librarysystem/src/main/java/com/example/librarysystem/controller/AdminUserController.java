@@ -48,6 +48,17 @@ public class AdminUserController {
         }
     }
 
+    // 관리자 추가
+    @PostMapping("/admin")
+    public ResponseEntity<MemberDto> createAdmin(@RequestBody MemberCreateRequest request) {
+        try {
+            MemberDto user = memberService.createAdmin(request);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // 사용자 수정
     @PutMapping("/{id}")
     public ResponseEntity<MemberDto> updateUser(@PathVariable Long id, @RequestBody MemberCreateRequest request) {
