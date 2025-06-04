@@ -21,13 +21,15 @@ const API_BASE_URL = 'http://localhost:8080';
 // 일반 API 헬퍼 함수 (JWT 토큰 필요)
 const apiCall = async (url, options = {}) => {
     const token = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
 
     console.log('API Call:', url);
     console.log('Token exists:', !!token);
 
     const defaultHeaders = {
         'Content-Type': 'application/json',
-        ...(token && {'Authorization': `Bearer ${token}`})
+        ...(token && {'Authorization': `Bearer ${token}`}),
+        ...(refreshToken && {'Refresh-Token': refreshToken})
     };
 
     try {
@@ -43,6 +45,18 @@ const apiCall = async (url, options = {}) => {
 
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers);
+
+        const newAccessToken = response.headers.get('New-Access-Token');
+        const newRefreshToken = response.headers.get('New-Refresh-Token');
+
+        if (newAccessToken) {
+            console.log('Received new access token, updating localStorage');
+            localStorage.setItem('accessToken', newAccessToken);
+
+            if (newRefreshToken) {
+                localStorage.setItem('refreshToken', newRefreshToken);
+            }
+        }
 
         if (!response.ok) {
             if (response.status === 401) {
