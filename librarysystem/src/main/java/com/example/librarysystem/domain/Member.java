@@ -41,4 +41,7 @@ public class Member {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Loan> loans = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private RefreshToken refreshToken;
 }
