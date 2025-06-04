@@ -22,8 +22,8 @@ const API_BASE_URL = 'http://localhost:8080';
 const apiCall = async (url, options = {}) => {
     const token = localStorage.getItem('accessToken');
 
-    console.log('🚀 API Call:', url);
-    console.log('🔑 Token exists:', !!token);
+    console.log('API Call:', url);
+    console.log('Token exists:', !!token);
 
     const defaultHeaders = {
         'Content-Type': 'application/json',
@@ -41,34 +41,34 @@ const apiCall = async (url, options = {}) => {
             credentials: 'include'
         });
 
-        console.log('📥 Response status:', response.status);
-        console.log('📥 Response headers:', response.headers);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
 
         if (!response.ok) {
             if (response.status === 401) {
-                console.log('🔐 Unauthorized - removing tokens');
+                console.log('Unauthorized - removing tokens');
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
             }
 
             const errorText = await response.text();
-            console.log('❌ Error response:', errorText);
+            console.log('Error response:', errorText);
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('✅ Success response:', data);
+        console.log('Success response:', data);
         return data;
     } catch (error) {
-        console.error('💥 API Call Error:', error);
+        console.error('API Call Error:', error);
         throw error;
     }
 };
 
 // 로그인 전용 API 함수 (JWT 토큰 불필요)
 const loginApiCall = async (url, options = {}) => {
-    console.log('🔐 Login API Call:', url);
+    console.log('Login API Call:', url);
 
     const defaultHeaders = {
         'Content-Type': 'application/json'
@@ -85,26 +85,26 @@ const loginApiCall = async (url, options = {}) => {
             credentials: 'include'
         });
 
-        console.log('📥 Login Response status:', response.status);
+        console.log('Login Response status:', response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.log('❌ Login Error response:', errorText);
+            console.log('Login Error response:', errorText);
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('✅ Login Success response:', data);
+        console.log('Login Success response:', data);
         return data;
     } catch (error) {
-        console.error('💥 Login API Call Error:', error);
+        console.error('Login API Call Error:', error);
         throw error;
     }
 };
 
 // 공개 API 함수 (JWT 토큰 불필요)
 const publicApiCall = async (url, options = {}) => {
-    console.log('🌐 Public API Call:', url);
+    console.log('Public API Call:', url);
 
     const defaultHeaders = {
         'Content-Type': 'application/json'
@@ -120,19 +120,19 @@ const publicApiCall = async (url, options = {}) => {
             mode: 'cors'
         });
 
-        console.log('📥 Public Response status:', response.status);
+        console.log('Public Response status:', response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.log('❌ Public Error response:', errorText);
+            console.log('Public Error response:', errorText);
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log('✅ Public Success response:', data);
+        console.log('Public Success response:', data);
         return data;
     } catch (error) {
-        console.error('💥 Public API Call Error:', error);
+        console.error('Public API Call Error:', error);
         throw error;
     }
 };
@@ -200,16 +200,18 @@ const AdminDashboard = () => {
                 setLoading(true);
                 setError('');
 
-                const [activeLoans, overdueLoans] = await Promise.all([
+                const [activeLoans, overdueLoans, totalUsers, totalBooks] = await Promise.all([
                     apiCall('/api/admin/loans'),
-                    apiCall('/api/admin/loans/overdue')
+                    apiCall('/api/admin/loans/overdue'),
+                    apiCall('/api/admin/users'),
+                    apiCall('/api/admin/books')
                 ]);
 
                 setStats({
-                    activeLoans: activeLoans.length || 0,
+                    activeLoans: activeLoans.content.length || 0,
                     overdueLoans: overdueLoans.length || 0,
-                    totalUsers: 0, // 임시값
-                    totalBooks: 0  // 임시값
+                    totalUsers: totalUsers.content.length || 0,
+                    totalBooks: totalBooks.content.length || 0
                 });
             } catch (error) {
                 console.error('Failed to load stats:', error);
@@ -1289,7 +1291,7 @@ const LoanManagement = () => {
             });
 
             setShowModal(false);
-            setLoanForm({ userId: '', bookId: '', loanDays: 14 });
+            setLoanForm({userId: '', bookId: '', loanDays: 14});
             loadLoans(currentPage);
             loadUsersAndBooks(); // 도서 목록 새로고침
             alert('대출이 등록되었습니다.');
@@ -1316,7 +1318,7 @@ const LoanManagement = () => {
     };
 
     const openCreateModal = () => {
-        setLoanForm({ userId: '', bookId: '', loanDays: 14 });
+        setLoanForm({userId: '', bookId: '', loanDays: 14});
         setShowModal(true);
     };
 
