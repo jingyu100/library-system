@@ -19,6 +19,7 @@ public class AdminLoanController {
 
     private final LoanService loanService;
 
+    // 현재 모든 대출 현황 조회
     @GetMapping
     public ResponseEntity<Page<LoanDto>> getAllActiveLoans(
             @RequestParam(defaultValue = "0") int page,
@@ -28,7 +29,7 @@ public class AdminLoanController {
         return ResponseEntity.ok(loans);
     }
 
-    // 검색 기능
+    // 연체되지 않은 대출 현황 조회
     @GetMapping("/search")
     public ResponseEntity<Page<LoanDto>> searchLoans(
             @RequestParam String query,
@@ -39,18 +40,21 @@ public class AdminLoanController {
         return ResponseEntity.ok(loans);
     }
 
+    // 연체된 대출 현황 조회
     @GetMapping("/overdue")
     public ResponseEntity<List<LoanDto>> getOverdueLoans() {
         List<LoanDto> loans = loanService.getOverdueLoans();
         return ResponseEntity.ok(loans);
     }
 
+    // 해당 유저의 대출 현황 조회
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<LoanDto>> getUserLoans(@PathVariable Long userId) {
         List<LoanDto> loans = loanService.getUserLoans(userId);
         return ResponseEntity.ok(loans);
     }
 
+    // 유저에게 도서 대출
     @PostMapping
     public ResponseEntity<LoanDto> loanBook(@RequestBody LoanRequest request) {
         try {
@@ -61,6 +65,7 @@ public class AdminLoanController {
         }
     }
 
+    // 도서 반납
     @PutMapping("/{loanId}/return")
     public ResponseEntity<LoanDto> returnBook(@PathVariable Long loanId) {
         try {
@@ -71,6 +76,7 @@ public class AdminLoanController {
         }
     }
 
+    // 도서 아이디로 도서 반납
     @PostMapping("/return/book/{bookId}")
     public ResponseEntity<LoanDto> returnBookByBookId(@PathVariable Long bookId) {
         try {

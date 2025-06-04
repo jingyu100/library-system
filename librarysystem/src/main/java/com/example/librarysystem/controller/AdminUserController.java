@@ -22,12 +22,14 @@ public class AdminUserController {
     private final MemberService memberService;
     private final LoanService loanService;
 
+    // 모든 사용자 조회
     @GetMapping
     public ResponseEntity<Page<MemberDto>> getAllUsers(Pageable pageable) {
         Page<MemberDto> users = memberService.getAllMembers(pageable);
         return ResponseEntity.ok(users);
     }
 
+    // 사용자 정보 조회
     @GetMapping("/{id}")
     public ResponseEntity<MemberDto> getUser(@PathVariable Long id) {
         return memberService.getMemberById(id)
@@ -35,6 +37,7 @@ public class AdminUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // 사용자 추가
     @PostMapping
     public ResponseEntity<MemberDto> createUser(@RequestBody MemberCreateRequest request) {
         try {
@@ -45,6 +48,7 @@ public class AdminUserController {
         }
     }
 
+    // 사용자 수정
     @PutMapping("/{id}")
     public ResponseEntity<MemberDto> updateUser(@PathVariable Long id, @RequestBody MemberCreateRequest request) {
         try {
@@ -55,12 +59,14 @@ public class AdminUserController {
         }
     }
 
+    // 사용자 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
         memberService.deleteMember(id);
         return ResponseEntity.ok().build();
     }
 
+    // 사용자 대출 내역 조회
     @GetMapping("/{id}/loans")
     public ResponseEntity<List<LoanDto>> getUserLoans(@PathVariable Long id) {
         try {
@@ -71,6 +77,7 @@ public class AdminUserController {
         }
     }
 
+    // 사용자 현재 대출 현황 조회
     @GetMapping("/{id}/loans/active")
     public ResponseEntity<List<LoanDto>> getUserActiveLoans(@PathVariable Long id) {
         try {

@@ -92,15 +92,6 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
-//    private String getSortField(String sortBy) {
-//        return switch (sortBy) {
-//            case "author" -> "author";
-//            case "publishedAt", "publishedYear" -> "publishedAt";
-//            case "publisher" -> "publisher";
-//            default -> "title";
-//        };
-//    }
-
     private BookDto convertToDto(Book book) {
         return BookDto.builder()
                 .id(book.getId())

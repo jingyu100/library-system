@@ -15,6 +15,7 @@ public class PublicBookController {
 
     private final BookService bookService;
 
+    // 도서 검색
     @GetMapping("/search")
     public ResponseEntity<Page<BookDto>> searchBooks(
             @RequestParam(required = false) String title,

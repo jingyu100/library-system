@@ -26,14 +26,6 @@ public class LoanService {
     private final BookService bookService;
 
     @Transactional(readOnly = true)
-    public List<LoanDto> getAllActiveLoans() {
-        return loanRepository.findByStatus(LoanStatus.ACTIVE)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public List<LoanDto> getUserLoans(Long userId) {
         return loanRepository.findByMemberIdAndStatus(userId, LoanStatus.ACTIVE)
                 .stream()
