@@ -5,8 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d9b34187-7208-40b6-92f5-d94f9e674149" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/AdminApp.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/AdminLoginPage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/HomePage.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/ProtectedRoute.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/UserSearchPage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/librarysystem-ui/src/components/LibraryApp.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/librarysystem-ui/src/components/LibraryApp.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/librarysystem-ui/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/librarysystem-ui/src/App.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +71,8 @@
       <workItem from="1748439684180" duration="76000" />
       <workItem from="1748940071320" duration="348000" />
       <workItem from="1748940544551" duration="3433000" />
+      <workItem from="1748945152259" duration="3167000" />
+      <workItem from="1749119244302" duration="401000" />
     </task>
     <servers />
   </component>
