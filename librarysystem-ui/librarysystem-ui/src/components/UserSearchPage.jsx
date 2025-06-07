@@ -102,109 +102,157 @@ const UserSearchPage = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <div className="container mx-auto px-4 py-8">
-                {/* 네비게이션 */}
-                <nav className="flex items-center gap-2 text-sm mb-6">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="text-blue-600 hover:underline"
-                    >
-                        홈
-                    </button>
-                    <span className="text-gray-500">/</span>
-                    <span className="text-gray-700">도서 검색</span>
-                </nav>
+        <div className="min-h-screen bg-slate-50">
+            {/* 헤더 */}
+            <div className="bg-white border-b border-slate-200">
+                <div className="container mx-auto px-6 py-4">
+                    <div className="flex items-center space-x-2 text-sm">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="text-indigo-600 font-medium"
+                        >
+                            홈
+                        </button>
+                        <span className="text-slate-400">/</span>
+                        <span className="text-slate-600">도서 검색</span>
+                    </div>
+                </div>
+            </div>
 
-                <h1 className="text-3xl font-bold mb-6">도서 검색</h1>
+            <div className="container mx-auto px-6 py-8">
+                {/* 페이지 제목 */}
+                <div className="mb-8">
+                    <h1 className="text-3xl font-light text-slate-800 mb-2">도서 검색</h1>
+                    <p className="text-slate-600">원하는 도서를 빠르게 찾아보세요</p>
+                </div>
 
                 {/* 검색 폼 */}
-                <div className="bg-white rounded-lg shadow p-6 mb-6">
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid md:grid-cols-4 gap-4 mb-4">
-                            <input
-                                type="text"
-                                placeholder="제목"
-                                value={searchForm.title}
-                                onChange={(e) => setSearchForm({...searchForm, title: e.target.value})}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <input
-                                type="text"
-                                placeholder="저자"
-                                value={searchForm.author}
-                                onChange={(e) => setSearchForm({...searchForm, author: e.target.value})}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <input
-                                type="text"
-                                placeholder="출판사"
-                                value={searchForm.publisher}
-                                onChange={(e) => setSearchForm({...searchForm, publisher: e.target.value})}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-8">
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">제목</label>
+                                <input
+                                    type="text"
+                                    placeholder="도서 제목을 입력하세요"
+                                    value={searchForm.title}
+                                    onChange={(e) => setSearchForm({...searchForm, title: e.target.value})}
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">저자</label>
+                                <input
+                                    type="text"
+                                    placeholder="저자명을 입력하세요"
+                                    value={searchForm.author}
+                                    onChange={(e) => setSearchForm({...searchForm, author: e.target.value})}
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-slate-700">출판사</label>
+                                <input
+                                    type="text"
+                                    placeholder="출판사명을 입력하세요"
+                                    value={searchForm.publisher}
+                                    onChange={(e) => setSearchForm({...searchForm, publisher: e.target.value})}
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-4 items-end">
+                            <div className="flex-1 grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">정렬 기준</label>
+                                    <select
+                                        value={searchForm.sortBy}
+                                        onChange={(e) => setSearchForm({...searchForm, sortBy: e.target.value})}
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="title">제목순</option>
+                                        <option value="author">저자순</option>
+                                        <option value="publishedAt">출간년순</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">정렬 방향</label>
+                                    <select
+                                        value={searchForm.sortDirection}
+                                        onChange={(e) => setSearchForm({...searchForm, sortDirection: e.target.value})}
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    >
+                                        <option value="asc">오름차순</option>
+                                        <option value="desc">내림차순</option>
+                                    </select>
+                                </div>
+                            </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                className="px-8 py-3 bg-indigo-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
                                 {loading ? '검색 중...' : '검색'}
                             </button>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <select
-                                value={searchForm.sortBy}
-                                onChange={(e) => setSearchForm({...searchForm, sortBy: e.target.value})}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="title">제목순</option>
-                                <option value="author">저자순</option>
-                                <option value="publishedAt">출간년순</option>
-                            </select>
-                            <select
-                                value={searchForm.sortDirection}
-                                onChange={(e) => setSearchForm({...searchForm, sortDirection: e.target.value})}
-                                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="asc">오름차순</option>
-                                <option value="desc">내림차순</option>
-                            </select>
                         </div>
                     </form>
                 </div>
 
                 {/* 오류 메시지 */}
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6">
                         {error}
                     </div>
                 )}
 
                 {/* 검색 결과 */}
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-4 mb-8">
                     {books.length === 0 && !loading ? (
-                        <div className="col-span-2 text-center text-gray-500 py-8">
-                            검색 결과가 없습니다.
+                        <div className="text-center py-16">
+                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-medium text-slate-800 mb-2">검색 결과가 없습니다</h3>
+                            <p className="text-slate-600">다른 검색어로 다시 시도해보세요</p>
                         </div>
                     ) : (
                         books.map((book) => (
-                            <div key={book.id} className="bg-white rounded-lg shadow p-6">
-                                <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
-                                <div className="text-gray-600 space-y-1 mb-3">
-                                    <p><span className="font-medium">저자:</span> {book.author}</p>
-                                    <p><span className="font-medium">출판사:</span> {book.publisher}</p>
-                                    <p><span className="font-medium">출간년:</span> {book.publishedAt || 'N/A'}</p>
-                                    <p><span
-                                        className="font-medium">가격:</span> {book.price ? `${book.price.toLocaleString()}원` : 'N/A'}
-                                    </p>
+                            <div key={book.id} className="bg-white rounded-2xl border border-slate-200 p-6">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                                    <div className="flex-1 space-y-3">
+                                        <h3 className="text-xl font-medium text-slate-800">{book.title}</h3>
+                                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-slate-500">저자:</span>
+                                                <span className="text-slate-700 font-medium">{book.author}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-slate-500">출판사:</span>
+                                                <span className="text-slate-700">{book.publisher}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-slate-500">출간년:</span>
+                                                <span className="text-slate-700">{book.publishedAt || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-slate-500">가격:</span>
+                                                <span className="text-slate-700">{book.price ? `${book.price.toLocaleString()}원` : 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 md:mt-0 md:ml-6">
+                                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+                                            book.available
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-red-100 text-red-700'
+                                        }`}>
+                                            {book.available ? '대출 가능' : '대출 불가'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                                    book.available
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                }`}>
-                                    {book.available ? '대출 가능' : '대출 불가'}
-                                </span>
                             </div>
                         ))
                     )}
@@ -212,39 +260,41 @@ const UserSearchPage = () => {
 
                 {/* 페이지네이션 */}
                 {totalPages > 1 && (
-                    <div className="flex justify-center gap-2">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage === 0}
-                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                        >
-                            이전
-                        </button>
+                    <div className="flex justify-center">
+                        <div className="flex items-center space-x-2">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 0}
+                                className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                이전
+                            </button>
 
-                        {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
-                            const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
-                            return (
-                                <button
-                                    key={page}
-                                    onClick={() => handlePageChange(page)}
-                                    className={`px-3 py-2 border border-gray-300 rounded-lg ${
-                                        page === currentPage
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-white hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {page + 1}
-                                </button>
-                            );
-                        })}
+                            {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                                const page = Math.max(0, Math.min(totalPages - 5, currentPage - 2)) + i;
+                                return (
+                                    <button
+                                        key={page}
+                                        onClick={() => handlePageChange(page)}
+                                        className={`px-4 py-2 rounded-lg ${
+                                            page === currentPage
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'border border-slate-300'
+                                        }`}
+                                    >
+                                        {page + 1}
+                                    </button>
+                                );
+                            })}
 
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage >= totalPages - 1}
-                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
-                        >
-                            다음
-                        </button>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage >= totalPages - 1}
+                                className="px-4 py-2 border border-slate-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                다음
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

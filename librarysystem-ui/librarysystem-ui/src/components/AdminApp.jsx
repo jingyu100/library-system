@@ -107,43 +107,55 @@ const AdminNav = ({currentPage, onNavigate, onLogout}) => {
     ];
 
     return (
-        <nav className="bg-gray-800 text-white p-4">
-            <div className="container mx-auto flex justify-between items-center">
-                <div className="flex items-center gap-6">
-                    <h1 className="text-xl font-bold">도서관 관리</h1>
-                    <div className="flex gap-4">
-                        {navItems.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                                <button
-                                    key={item.id}
-                                    onClick={() => onNavigate(item.id)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${
-                                        currentPage === item.id
-                                            ? 'bg-blue-600'
-                                            : 'hover:bg-gray-700'
-                                    }`}
-                                >
-                                    <Icon size={16}/>
-                                    {item.label}
-                                </button>
-                            );
-                        })}
+        <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+            <div className="container mx-auto px-6">
+                <div className="flex items-center justify-between h-16">
+                    {/* 로고 및 타이틀 */}
+                    <div className="flex items-center space-x-8">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+                                <BookOpen size={20} className="text-white"/>
+                            </div>
+                            <h1 className="text-xl font-semibold text-slate-800">관리자 시스템</h1>
+                        </div>
+
+                        {/* 네비게이션 메뉴 */}
+                        <div className="hidden md:flex items-center space-x-1">
+                            {navItems.map((item) => {
+                                const Icon = item.icon;
+                                return (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => onNavigate(item.id)}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium ${
+                                            currentPage === item.id
+                                                ? 'bg-indigo-50 text-indigo-700'
+                                                : 'text-slate-600'
+                                        }`}
+                                    >
+                                        <Icon size={16}/>
+                                        <span>{item.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
+
+                    {/* 로그아웃 버튼 */}
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center space-x-2 px-4 py-2 text-slate-600 rounded-xl"
+                    >
+                        <LogOut size={16}/>
+                        <span className="hidden sm:block">로그아웃</span>
+                    </button>
                 </div>
-                <button
-                    onClick={onLogout}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-700 rounded transition-colors"
-                >
-                    <LogOut size={16}/>
-                    로그아웃
-                </button>
             </div>
         </nav>
     );
 };
 
-// 관리자 대시보드 (간단한 버전)
+// 관리자 대시보드
 const AdminDashboard = () => {
     const [stats, setStats] = useState({
         activeLoans: 0,
@@ -186,66 +198,93 @@ const AdminDashboard = () => {
 
     if (loading) {
         return (
-            <div className="p-8 text-center">
-                <div className="text-lg">로딩 중...</div>
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">데이터를 불러오는 중...</p>
+                </div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="p-8 text-center">
-                <div className="text-red-600">{error}</div>
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertTriangle size={24} className="text-red-600"/>
+                    </div>
+                    <p className="text-red-600">{error}</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6">관리자 대시보드</h2>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-blue-500 text-white rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-blue-100">현재 대출 중</p>
-                            <p className="text-3xl font-bold">{stats.activeLoans}</p>
-                            <p className="text-blue-100">권</p>
-                        </div>
-                        <FileText size={48} className="opacity-80"/>
-                    </div>
+        <div className="min-h-screen bg-slate-50">
+            <div className="container mx-auto px-6 py-8">
+                {/* 페이지 헤더 */}
+                <div className="mb-8">
+                    <h2 className="text-3xl font-light text-slate-800 mb-2">대시보드</h2>
+                    <p className="text-slate-600">도서관 현황을 한눈에 확인하세요</p>
                 </div>
 
-                <div className="bg-red-500 text-white rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-red-100">연체된 도서</p>
-                            <p className="text-3xl font-bold">{stats.overdueLoans}</p>
-                            <p className="text-red-100">권</p>
+                {/* 통계 카드 */}
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <FileText size={24} className="text-blue-600"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-bold text-slate-800">{stats.activeLoans}</p>
+                                <p className="text-sm text-slate-600">권</p>
+                            </div>
                         </div>
-                        <AlertTriangle size={48} className="opacity-80"/>
+                        <h3 className="font-medium text-slate-800 mb-1">현재 대출 중</h3>
+                        <p className="text-sm text-slate-500">대출된 도서 수</p>
                     </div>
-                </div>
 
-                <div className="bg-green-500 text-white rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-green-100">전체 사용자</p>
-                            <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                            <p className="text-green-100">명</p>
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                <AlertTriangle size={24} className="text-red-600"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-bold text-slate-800">{stats.overdueLoans}</p>
+                                <p className="text-sm text-slate-600">권</p>
+                            </div>
                         </div>
-                        <Users size={48} className="opacity-80"/>
+                        <h3 className="font-medium text-slate-800 mb-1">연체된 도서</h3>
+                        <p className="text-sm text-slate-500">반납 기한 초과</p>
                     </div>
-                </div>
 
-                <div className="bg-purple-500 text-white rounded-lg p-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-purple-100">전체 도서</p>
-                            <p className="text-3xl font-bold">{stats.totalBooks}</p>
-                            <p className="text-purple-100">권</p>
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <Users size={24} className="text-emerald-600"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-bold text-slate-800">{stats.totalUsers}</p>
+                                <p className="text-sm text-slate-600">명</p>
+                            </div>
                         </div>
-                        <BookOpen size={48} className="opacity-80"/>
+                        <h3 className="font-medium text-slate-800 mb-1">전체 사용자</h3>
+                        <p className="text-sm text-slate-500">등록된 사용자 수</p>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 border border-slate-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <BookOpen size={24} className="text-purple-600"/>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-bold text-slate-800">{stats.totalBooks}</p>
+                                <p className="text-sm text-slate-600">권</p>
+                            </div>
+                        </div>
+                        <h3 className="font-medium text-slate-800 mb-1">전체 도서</h3>
+                        <p className="text-sm text-slate-500">등록된 도서 수</p>
                     </div>
                 </div>
             </div>
@@ -427,18 +466,18 @@ const UserManagement = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">사용자 관리</h2>
-                <div className="flex gap-2">
+                <h2 className="text-2xl font-light text-slate-800">사용자 관리</h2>
+                <div className="flex gap-3">
                     <button
                         onClick={openAddUserModal}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                     >
                         <Plus size={16}/>
                         사용자 추가
                     </button>
                     <button
                         onClick={openAddAdminModal}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                     >
                         <Plus size={16}/>
                         관리자 추가
@@ -466,24 +505,24 @@ const UserManagement = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.contact}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.memo || '-'}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => handleViewUserLoans(user)}
-                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                                            className="text-emerald-600 font-medium flex items-center gap-1"
                                         >
                                             <FileText size={14}/>
                                             대출현황
                                         </button>
                                         <button
                                             onClick={() => handleEditUser(user)}
-                                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                                            className="text-indigo-600 font-medium flex items-center gap-1"
                                         >
                                             <Edit size={14}/>
                                             수정
                                         </button>
                                         <button
                                             onClick={() => handleDeleteUser(user.id)}
-                                            className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                                            className="text-red-600 font-medium flex items-center gap-1"
                                         >
                                             <Trash2 size={14}/>
                                             삭제
@@ -746,7 +785,7 @@ const UserManagement = () => {
                         <div className="flex justify-end mt-6">
                             <button
                                 onClick={() => setShowLoanModal(false)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                                className="px-6 py-3 bg-slate-600 text-white rounded-xl font-medium"
                             >
                                 닫기
                             </button>
@@ -931,10 +970,10 @@ const BookManagement = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">도서 관리</h2>
+                <h2 className="text-2xl font-light text-slate-800">도서 관리</h2>
                 <button
                     onClick={openAddModal}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                 >
                     <Plus size={16}/>
                     도서 추가
@@ -971,24 +1010,24 @@ const BookManagement = () => {
                                     {getStatusBadge(book.status)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-3">
                                         <button
                                             onClick={() => handleViewBookLoans(book)}
-                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                                            className="text-emerald-600 font-medium flex items-center gap-1"
                                         >
                                             <FileText size={14}/>
                                             대출이력
                                         </button>
                                         <button
                                             onClick={() => handleEditBook(book)}
-                                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                                            className="text-indigo-600 font-medium flex items-center gap-1"
                                         >
                                             <Edit size={14}/>
                                             수정
                                         </button>
                                         <button
                                             onClick={() => handleDeleteBook(book.id)}
-                                            className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                                            className="text-red-600 font-medium flex items-center gap-1"
                                         >
                                             <Trash2 size={14}/>
                                             삭제
@@ -1003,11 +1042,11 @@ const BookManagement = () => {
 
                 {/* 페이지네이션 */}
                 {totalPages > 1 && (
-                    <div className="flex justify-center gap-2 p-4">
+                    <div className="flex justify-center gap-2 p-6">
                         <button
-                            onClick={() => loadBooks(currentPage - 1)}
+                            onClick={() => loadUsers(currentPage - 1)}
                             disabled={currentPage === 0}
-                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                            className="px-4 py-2 border border-slate-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             이전
                         </button>
@@ -1017,11 +1056,11 @@ const BookManagement = () => {
                             return (
                                 <button
                                     key={page}
-                                    onClick={() => loadBooks(page)}
-                                    className={`px-3 py-2 border border-gray-300 rounded-lg ${
+                                    onClick={() => loadUsers(page)}
+                                    className={`px-4 py-2 rounded-xl ${
                                         page === currentPage
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-white hover:bg-gray-50'
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'border border-slate-300'
                                     }`}
                                 >
                                     {page + 1}
@@ -1030,13 +1069,14 @@ const BookManagement = () => {
                         })}
 
                         <button
-                            onClick={() => loadBooks(currentPage + 1)}
+                            onClick={() => loadUsers(currentPage + 1)}
                             disabled={currentPage >= totalPages - 1}
-                            className="px-3 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                            className="px-4 py-2 border border-slate-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             다음
                         </button>
                     </div>
+
                 )}
             </div>
 
@@ -1215,16 +1255,16 @@ const BookManagement = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-2 mt-6">
+                        <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                                className="flex-1 px-6 py-3 text-slate-700 bg-slate-100 rounded-xl font-medium"
                             >
                                 취소
                             </button>
                             <button
-                                onClick={handleSaveBook}
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                onClick={handleSaveUser}
+                                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium"
                             >
                                 저장
                             </button>
@@ -1377,10 +1417,10 @@ const LoanManagement = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">대출 관리</h2>
+                <h2 className="text-2xl font-light text-slate-800">대출 관리</h2>
                 <button
                     onClick={openCreateModal}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                 >
                     <Plus size={16}/>
                     대출 등록
@@ -1400,7 +1440,7 @@ const LoanManagement = () => {
                     />
                     <button
                         onClick={handleSearch}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                     >
                         <Search size={16}/>
                         검색
@@ -1443,7 +1483,7 @@ const LoanManagement = () => {
                                     {loan.status !== 'RETURNED' && (
                                         <button
                                             onClick={() => handleReturnBook(loan.id)}
-                                            className="text-green-600 hover:text-green-900 flex items-center gap-1"
+                                            className="text-emerald-600 font-medium flex items-center gap-1"
                                         >
                                             <FileText size={14}/>
                                             반납
@@ -1547,17 +1587,17 @@ const LoanManagement = () => {
                             </div>
                         </div>
 
-                        <div className="flex gap-2 mt-6">
+                        <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300"
+                                className="flex-1 px-6 py-3 text-slate-700 bg-slate-100 rounded-xl font-medium"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={handleCreateLoan}
                                 disabled={!loanForm.userId || !loanForm.bookId}
-                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 등록
                             </button>

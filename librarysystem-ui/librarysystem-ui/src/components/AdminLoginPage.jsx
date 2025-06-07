@@ -86,65 +86,99 @@ const AdminLoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-            <div className="max-w-md w-full mx-4">
-                <div className="bg-white rounded-lg shadow-lg">
-                    <div className="bg-gray-800 text-white p-6 rounded-t-lg text-center">
-                        <h2 className="text-2xl font-bold">관리자 로그인</h2>
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+            <div className="w-full max-w-md">
+                <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+                    {/* 헤더 */}
+                    <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-8 py-10 text-center">
+                        <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-2xl font-light text-white mb-2">관리자 로그인</h2>
+                        <p className="text-slate-300 text-sm">시스템 관리를 위해 로그인해주세요</p>
                     </div>
-                    <div className="p-6">
+
+                    {/* 폼 */}
+                    <div className="px-8 py-8">
                         {error && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm">
                                 {error}
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">
                                     아이디
                                 </label>
                                 <input
                                     type="text"
                                     value={credentials.username}
                                     onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                                    placeholder="관리자 아이디를 입력하세요"
                                     required
                                 />
                             </div>
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">
                                     비밀번호
                                 </label>
                                 <input
                                     type="password"
                                     value={credentials.password}
                                     onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                                    placeholder="비밀번호를 입력하세요"
                                     required
                                 />
                             </div>
+
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                className="w-full bg-slate-800 text-white py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                             >
-                                {loading ? '로그인 중...' : '로그인'}
+                                {loading ? (
+                                    <div className="flex items-center justify-center space-x-2">
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>로그인 중...</span>
+                                    </div>
+                                ) : (
+                                    '로그인'
+                                )}
                             </button>
                         </form>
                     </div>
-                    <div className="bg-gray-50 px-6 py-4 rounded-b-lg text-center">
-                        <small className="text-gray-600">
-                            테스트 계정: admin / admin123
-                        </small>
+
+                    {/* 하단 정보 */}
+                    <div className="bg-slate-50 px-8 py-6 border-t border-slate-200">
+                        <div className="text-center">
+                            <p className="text-sm text-slate-600 mb-3">테스트 계정 정보</p>
+                            <div className="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span>아이디:</span>
+                                    <span className="font-mono">admin</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span>비밀번호:</span>
+                                    <span className="font-mono">admin123</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="text-center mt-4">
+
+                {/* 하단 링크 */}
+                <div className="text-center mt-6">
                     <button
                         onClick={() => navigate('/')}
-                        className="text-gray-600 hover:text-gray-800 underline"
+                        className="text-slate-600 text-sm font-medium"
                     >
-                        메인 페이지로 돌아가기
+                        ← 메인 페이지로 돌아가기
                     </button>
                 </div>
             </div>
