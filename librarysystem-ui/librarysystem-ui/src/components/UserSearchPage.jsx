@@ -103,22 +103,6 @@ const UserSearchPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* 헤더 */}
-            <div className="bg-white border-b border-slate-200">
-                <div className="container mx-auto px-6 py-4">
-                    <div className="flex items-center space-x-2 text-sm">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="text-indigo-600 font-medium"
-                        >
-                            홈
-                        </button>
-                        <span className="text-slate-400">/</span>
-                        <span className="text-slate-600">도서 검색</span>
-                    </div>
-                </div>
-            </div>
-
             <div className="container mx-auto px-6 py-8">
                 {/* 페이지 제목 */}
                 <div className="mb-8">

@@ -12,16 +12,13 @@ function App() {
         <Router>
             <div className="App">
                 <Routes>
-                    {/* 홈페이지 */}
-                    <Route path="/" element={<HomePage />} />
-
                     {/* 사용자 도서 검색 페이지 */}
                     <Route path="/search" element={<UserSearchPage />} />
 
                     {/* 관리자 로그인 페이지 */}
                     <Route path="/admin" element={<AdminLoginPage />} />
 
-                    {/* 관리자 대시보드 (보호된 라우트) */}
+                    {/* 관리자 대시보드*/}
                     <Route
                         path="/admin/dashboard"
                         element={
