@@ -113,9 +113,6 @@ const AdminNav = ({currentPage, onNavigate, onLogout}) => {
                     {/* 로고 및 타이틀 */}
                     <div className="flex items-center space-x-8">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-                                <BookOpen size={20} className="text-white"/>
-                            </div>
                             <h1 className="text-xl font-semibold text-slate-800">관리자 시스템</h1>
                         </div>
 
@@ -471,7 +468,7 @@ const UserManagement = () => {
                 <div className="flex gap-3">
                     <button
                         onClick={openAddUserModal}
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                        className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                     >
                         <Plus size={16}/>
                         사용자 추가
@@ -516,7 +513,7 @@ const UserManagement = () => {
                                         </button>
                                         <button
                                             onClick={() => handleEditUser(user)}
-                                            className="text-indigo-600 font-medium flex items-center gap-1"
+                                            className="text-blue-500 font-medium flex items-center gap-1"
                                         >
                                             <Edit size={14}/>
                                             수정
@@ -974,7 +971,7 @@ const BookManagement = () => {
                 <h2 className="text-2xl font-light text-slate-800">도서 관리</h2>
                 <button
                     onClick={openAddModal}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                    className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                 >
                     <Plus size={16}/>
                     도서 추가
@@ -1021,7 +1018,7 @@ const BookManagement = () => {
                                         </button>
                                         <button
                                             onClick={() => handleEditBook(book)}
-                                            className="text-indigo-600 font-medium flex items-center gap-1"
+                                            className="text-blue-500 font-medium flex items-center gap-1"
                                         >
                                             <Edit size={14}/>
                                             수정
@@ -1060,7 +1057,7 @@ const BookManagement = () => {
                                     onClick={() => loadUsers(page)}
                                     className={`px-4 py-2 rounded-xl ${
                                         page === currentPage
-                                            ? 'bg-indigo-600 text-white'
+                                            ? 'bg-blue-500 text-white'
                                             : 'border border-slate-300'
                                     }`}
                                 >
@@ -1265,7 +1262,7 @@ const BookManagement = () => {
                             </button>
                             <button
                                 onClick={handleSaveUser}
-                                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium"
+                                className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-xl font-medium"
                             >
                                 저장
                             </button>
@@ -1422,7 +1419,7 @@ const LoanManagement = () => {
                 <h2 className="text-2xl font-light text-slate-800">대출 관리</h2>
                 <button
                     onClick={openCreateModal}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                    className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                 >
                     <Plus size={16}/>
                     대출 등록
@@ -1442,7 +1439,7 @@ const LoanManagement = () => {
                     />
                     <button
                         onClick={handleSearch}
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
+                        className="bg-blue-500 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2"
                     >
                         <Search size={16}/>
                         검색
@@ -1599,7 +1596,7 @@ const LoanManagement = () => {
                             <button
                                 onClick={handleCreateLoan}
                                 disabled={!loanForm.userId || !loanForm.bookId}
-                                className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 등록
                             </button>
