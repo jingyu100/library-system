@@ -4,11 +4,11 @@ INSERT INTO users (username, password, contact, memo, user_type) VALUES
 
 -- 샘플 사용자 데이터 (비밀번호: password123)
 INSERT INTO users (username, password, contact, memo, user_type) VALUES
-                                                                     ('user001', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-1234-5678', '개발팀', 'USER'),
-                                                                     ('user002', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-2345-6789', '디자인팀', 'USER'),
-                                                                     ('user003', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-3456-7890', '기획팀', 'USER'),
-                                                                     ('user004', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-4567-8901', '마케팅팀', 'USER'),
-                                                                     ('user005', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-5678-9012', '인사팀', 'USER');
+                                                                     ('유재석', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-1234-5678', '개발팀', 'USER'),
+                                                                     ('박명수', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-2345-6789', '디자인팀', 'USER'),
+                                                                     ('정준하', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-3456-7890', '기획팀', 'USER'),
+                                                                     ('정형돈', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-4567-8901', '마케팅팀', 'USER'),
+                                                                     ('노홍철', '{bcrypt}$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', '010-5678-9012', '인사팀', 'USER');
 
 -- 샘플 도서 데이터 (published_year -> published_at으로 수정)
 INSERT INTO books (title, author, publisher, published_at, price, status) VALUES

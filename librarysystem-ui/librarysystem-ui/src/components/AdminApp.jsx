@@ -292,6 +292,7 @@ const AdminDashboard = () => {
     );
 };
 
+// 사용자 관리
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -797,7 +798,7 @@ const UserManagement = () => {
     );
 };
 
-// 도서 관리 페이지
+// 도서 관리
 const BookManagement = () => {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1276,6 +1277,7 @@ const BookManagement = () => {
     );
 };
 
+// 대출 관리
 const LoanManagement = () => {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);

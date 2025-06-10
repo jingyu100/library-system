@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
-import HomePage from './components/HomePage.jsx';
 import UserSearchPage from './components/UserSearchPage.jsx';
 import AdminLoginPage from './components/AdminLoginPage.jsx';
 import AdminApp from './components/AdminApp.jsx';
