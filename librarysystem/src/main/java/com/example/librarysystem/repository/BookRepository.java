@@ -18,9 +18,4 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                                     @Param("author") String author,
                                     @Param("publisher") String publisher,
                                     Pageable pageable);
-
-    Page<Book> findByStatus(BookStatus status, Pageable pageable);
-
-    @Query("SELECT b FROM Book b LEFT JOIN FETCH b.loans l WHERE b.id = :bookId")
-    Book findByIdWithLoans(@Param("bookId") Long bookId);
 }
